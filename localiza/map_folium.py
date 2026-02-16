@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, Tuple
+from typing import Any, Tuple
 
 import folium
 from folium.plugins import MeasureControl, Fullscreen, Draw, MousePosition, HeatMap
@@ -10,43 +10,17 @@ from .schema import circle_radius
 
 def add_base_tiles(m: folium.Map):
     tile_layers = [
-        {
-            "name": "Top Map",
-            "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-            "attr": "© OpenTopoMap",
-        },
-        {
-            "name": "OpenStreetMap",
-            "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            "attr": "© OpenStreetMap contributors",
-        },
-        {
-            "name": "CartoDB Positron",
-            "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-            "attr": "© CARTO",
-        },
-        {
-            "name": "CartoDB Dark",
-            "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-            "attr": "© CARTO",
-        },
-        {
-            "name": "Esri World Imagery",
-            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            "attr": "Tiles © Esri",
-        },
+        {"name": "Top Map", "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", "attr": "© OpenTopoMap"},
+        {"name": "OpenStreetMap", "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "attr": "© OpenStreetMap contributors"},
+        {"name": "CartoDB Positron", "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", "attr": "© CARTO"},
+        {"name": "CartoDB Dark", "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", "attr": "© CARTO"},
+        {"name": "Esri World Imagery", "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", "attr": "Tiles © Esri"},
     ]
     for t in tile_layers:
-        folium.TileLayer(
-            tiles=t["url"],
-            attr=t["attr"],
-            name=t["name"],
-            control=True,
-        ).add_to(m)
+        folium.TileLayer(tiles=t["url"], attr=t["attr"], name=t["name"], control=True).add_to(m)
 
 
 def build_map(center: list[float], zoom_start: int = 11) -> folium.Map:
-    # Folium espera center como [lat, lon]
     m = folium.Map(location=center, zoom_start=zoom_start, tiles=None, control_scale=True)
     add_base_tiles(m)
 
@@ -92,34 +66,46 @@ def _to_float(x):
         return None
 
 
+def _rescale_to_range(value: float, limit: float, max_divs: int = 12) -> float:
+    """
+    Se vier como inteiro sem vírgula (ex: -382093835), divide por 10 até caber na faixa.
+    """
+    v = float(value)
+    divs = 0
+    while abs(v) > limit and divs < max_divs:
+        v = v / 10.0
+        divs += 1
+    return v
+
+
 def _fix_latlon(lat, lon) -> Tuple[float, float] | None:
     """
-    Garante retorno como (lat, lon) dentro da faixa válida.
-    Se detectar inversão, corrige.
+    Retorna (lat, lon) prontos pro Folium.
+    Corrige escala quebrada e inversão.
     """
     lat_f = _to_float(lat)
     lon_f = _to_float(lon)
     if lat_f is None or lon_f is None:
         return None
 
-    # Caso clássico: veio invertido (lat fora da faixa e lon parece lat)
-    if abs(lat_f) > 90 and abs(lon_f) <= 90:
-        lat_f, lon_f = lon_f, lat_f
+    # 1) Corrige escala antes de qualquer coisa
+    lat_f = _rescale_to_range(lat_f, 90)
+    lon_f = _rescale_to_range(lon_f, 180)
 
-    # Validação final
+    # 2) Se ainda estiver estranho, tenta inverter e reescalar de novo
+    if (abs(lat_f) > 90 and abs(lon_f) <= 90) or (abs(lon_f) > 180 and abs(lat_f) <= 180):
+        lat_f, lon_f = lon_f, lat_f
+        lat_f = _rescale_to_range(lat_f, 90)
+        lon_f = _rescale_to_range(lon_f, 180)
+
+    # 3) Validação final
     if not (-90 <= lat_f <= 90 and -180 <= lon_f <= 180):
         return None
 
     return lat_f, lon_f
 
 
-def add_geojson_layer(
-    m: folium.Map,
-    name: str,
-    geojson: dict[str, Any],
-    style: dict[str, Any],
-):
-    # folium style_function só serve pra line/polygon
+def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: dict[str, Any]):
     def _style(_):
         return {
             "color": style.get("color", "#2b6cb0"),
@@ -146,9 +132,6 @@ def add_points_layer(
     popup_cols: list[str] | None = None,
     use_heatmap: bool = False,
 ):
-    """
-    df_points deve ter colunas lat/lon (preferível). Se vier invertido, corrigimos aqui.
-    """
     popup_cols = popup_cols or ["nome", "municipio", "Bairro/Distrito", "Endereço", "qt_votos"]
 
     color = style.get("color", "#2b6cb0")
@@ -156,17 +139,13 @@ def add_points_layer(
     radius = float(style.get("radius", 6))
     mode = style.get("mode", "circle")
 
-    # IMPORTANTÍSSIMO: cria o FeatureGroup uma vez (não dentro do loop)
     fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
     fg.add_to(m)
 
     heat_pts = []
 
     for _, r in df_points.iterrows():
-        lat = r.get("lat")
-        lon = r.get("lon")
-
-        fixed = _fix_latlon(lat, lon)
+        fixed = _fix_latlon(r.get("lat"), r.get("lon"))
         if not fixed:
             continue
         lat_f, lon_f = fixed
@@ -178,12 +157,10 @@ def add_points_layer(
 
         html = "<div style='min-width:240px'>"
         for c in popup_cols:
-            # pandas Series: "c in r" pode ser esquisito, melhor checar index
             try:
                 if c in r.index:
                     html += f"<div><b>{c}</b>. {r.get(c, '')}</div>"
             except Exception:
-                # fallback simples
                 val = r.get(c, "")
                 if val != "":
                     html += f"<div><b>{c}</b>. {val}</div>"
