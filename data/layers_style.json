@@ -1,1 +1,74 @@
+{
+  "defaults": {
+    "point": {
+      "mode": "circle",
+      "radius": 6,
+      "color": "#b00020",
+      "fillColor": "#b00020",
+      "fillOpacity": 0.85
+    },
+    "line": {
+      "color": "#b00020",
+      "weight": 3,
+      "opacity": 0.9,
+      "dashArray": ""
+    },
+    "polygon": {
+      "color": "#b00020",
+      "weight": 1,
+      "opacity": 1.0,
+      "fillColor": "#111111",
+      "fillOpacity": 0.08
+    }
+  },
+  "layers": {
+    "crateus_assentamentos": {
+      "polygon": {
+        "color": "#e27104",
+        "fillColor": "#e27104",
+        "fillOpacity": 0.07,
+        "weight": 2
+      }
+    },
+    "areas_urbanas": {
+      "polygon": {
+        "color": "#eb6e6e",
+        "fillColor": "#111111",
+        "fillOpacity": 0.14,
+        "weight": 2
+      }
+    },
+
+    "crateus_bairros": {
+      "polygon": {
+        "color": "#814afd",
+        "fillColor": "#814afd",
+        "fillOpacity": 0.14,
+        "weight": 2
+      }
+    },
+    "postos": {
+      "point": {
+        "mode": "icon",
+        "iconPath": "data/icons/hospital.png",
+        "iconSize": 26
+      }
+    },
+    "escolas": {
+      "point": {
+        "mode": "icon",
+        "iconPath": "data/icons/education.png",
+        "iconSize": 26
+      }
+    },
+
+    "crateus_comunidades": {
+      "point": {
+        "mode": "icon",
+        "iconPath": "data/icons/comunidade.png",
+        "iconSize": 15
+      }
+    }
+  }
+}
 
