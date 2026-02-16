@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable, Tuple
 
 import folium
 from folium.plugins import MeasureControl, Fullscreen, Draw, MousePosition, HeatMap
 
 from .schema import circle_radius
+
 
 def add_base_tiles(m: folium.Map):
     tile_layers = [
@@ -43,7 +44,9 @@ def add_base_tiles(m: folium.Map):
             control=True,
         ).add_to(m)
 
+
 def build_map(center: list[float], zoom_start: int = 11) -> folium.Map:
+    # Folium espera center como [lat, lon]
     m = folium.Map(location=center, zoom_start=zoom_start, tiles=None, control_scale=True)
     add_base_tiles(m)
 
@@ -79,6 +82,37 @@ def build_map(center: list[float], zoom_start: int = 11) -> folium.Map:
 
     return m
 
+
+def _to_float(x):
+    if x is None:
+        return None
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+
+def _fix_latlon(lat, lon) -> Tuple[float, float] | None:
+    """
+    Garante retorno como (lat, lon) dentro da faixa válida.
+    Se detectar inversão, corrige.
+    """
+    lat_f = _to_float(lat)
+    lon_f = _to_float(lon)
+    if lat_f is None or lon_f is None:
+        return None
+
+    # Caso clássico: veio invertido (lat fora da faixa e lon parece lat)
+    if abs(lat_f) > 90 and abs(lon_f) <= 90:
+        lat_f, lon_f = lon_f, lat_f
+
+    # Validação final
+    if not (-90 <= lat_f <= 90 and -180 <= lon_f <= 180):
+        return None
+
+    return lat_f, lon_f
+
+
 def add_geojson_layer(
     m: folium.Map,
     name: str,
@@ -103,6 +137,7 @@ def add_geojson_layer(
         show=bool(style.get("show", True)),
     ).add_to(m)
 
+
 def add_points_layer(
     m: folium.Map,
     name: str,
@@ -111,6 +146,9 @@ def add_points_layer(
     popup_cols: list[str] | None = None,
     use_heatmap: bool = False,
 ):
+    """
+    df_points deve ter colunas lat/lon (preferível). Se vier invertido, corrigimos aqui.
+    """
     popup_cols = popup_cols or ["nome", "municipio", "Bairro/Distrito", "Endereço", "qt_votos"]
 
     color = style.get("color", "#2b6cb0")
@@ -118,28 +156,43 @@ def add_points_layer(
     radius = float(style.get("radius", 6))
     mode = style.get("mode", "circle")
 
+    # IMPORTANTÍSSIMO: cria o FeatureGroup uma vez (não dentro do loop)
+    fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
+    fg.add_to(m)
+
     heat_pts = []
+
     for _, r in df_points.iterrows():
         lat = r.get("lat")
         lon = r.get("lon")
-        if lat is None or lon is None:
-            continue
 
-        votos = float(r.get("qt_votos") or 0.0)
+        fixed = _fix_latlon(lat, lon)
+        if not fixed:
+            continue
+        lat_f, lon_f = fixed
+
+        votos = _to_float(r.get("qt_votos")) or 0.0
 
         if use_heatmap:
-            heat_pts.append([float(lat), float(lon), max(0.1, votos)])
+            heat_pts.append([lat_f, lon_f, max(0.1, float(votos))])
 
         html = "<div style='min-width:240px'>"
         for c in popup_cols:
-            if c in r:
-                html += f"<div><b>{c}</b>. {r.get(c,'')}</div>"
+            # pandas Series: "c in r" pode ser esquisito, melhor checar index
+            try:
+                if c in r.index:
+                    html += f"<div><b>{c}</b>. {r.get(c, '')}</div>"
+            except Exception:
+                # fallback simples
+                val = r.get(c, "")
+                if val != "":
+                    html += f"<div><b>{c}</b>. {val}</div>"
         html += "</div>"
         popup = folium.Popup(html, max_width=380)
 
         if mode == "circle":
             folium.Circle(
-                location=[float(lat), float(lon)],
+                location=[lat_f, lon_f],
                 radius=circle_radius(votos) if style.get("radius_mode") == "votes" else radius,
                 color=color,
                 weight=float(style.get("weight", 2)),
@@ -147,10 +200,10 @@ def add_points_layer(
                 fill_color=fill,
                 fill_opacity=float(style.get("fillOpacity", 0.7)),
                 popup=popup,
-            ).add_to(folium.FeatureGroup(name=name, show=True).add_to(m))
+            ).add_to(fg)
         else:
             folium.CircleMarker(
-                location=[float(lat), float(lon)],
+                location=[lat_f, lon_f],
                 radius=radius,
                 color=color,
                 weight=float(style.get("weight", 2)),
@@ -158,10 +211,11 @@ def add_points_layer(
                 fill_color=fill,
                 fill_opacity=float(style.get("fillOpacity", 0.85)),
                 popup=popup,
-            ).add_to(folium.FeatureGroup(name=name, show=True).add_to(m))
+            ).add_to(fg)
 
     if use_heatmap and heat_pts:
         HeatMap(heat_pts, name=f"{name} Heat", show=False, min_opacity=0.3).add_to(m)
+
 
 def finalize_map(m: folium.Map):
     folium.LayerControl(collapsed=True).add_to(m)
