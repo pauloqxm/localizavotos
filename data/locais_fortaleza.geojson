@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "locais_fortaleza",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "fid": 1, "Municipio": "FORTALEZA", "Cod_Local": 1090, "CODIGO_UNICO": "0080-1090", "Local_Votacao": "AABB - ASSOCIAÇÃO ATLÉTICA BANCO DO BRASIL", "Endereco": "AV BARAO DE STUDART, 2917", "Bairro": "DIONISIO TORRES", "latitude": -3.7500039, "longitude": -38.510981445279, "CEP": 60120375, "Qtd_Total_Seções": 6, "Qtd_Seções_Agregadas": 0, "Qtd_Seções_Principais": 6, "Tot_Eleitores_Estadual": 2279, "Tot_Eleitores_Federal": 2279 }, "geometry": { "type": "Point", "coordinates": [ -38.510981445279, -3.7500039 ] } },
 { "type": "Feature", "properties": { "fid": 2, "Municipio": "FORTALEZA", "Cod_Local": 2712, "CODIGO_UNICO": "0003-2712", "Local_Votacao": "ACADEMIA DO PROFESSOR DARCY RIBEIRO", "Endereco": "RUA DONA LEOPOLDINA, 907", "Bairro": "CENTRO", "latitude": -3.7332223, "longitude": -38.5197388, "CEP": 60110001, "Qtd_Total_Seções": 5, "Qtd_Seções_Agregadas": 1, "Qtd_Seções_Principais": 4, "Tot_Eleitores_Estadual": 1127, "Tot_Eleitores_Federal": 1127 }, "geometry": { "type": "Point", "coordinates": [ -38.5197388, -3.7332223 ] } },
