@@ -41,6 +41,7 @@ ALIASES: dict[str, list[str]] = {
     "qt_votos": ["qt_votos", "qtvotos", "votos", "qtde_votos", "quantidade_votos", "QT_VOTOS"],
 }
 
+
 def safe_text(v: Any) -> str:
     if v is None:
         return ""
@@ -49,19 +50,51 @@ def safe_text(v: Any) -> str:
         return ""
     return s
 
+
 def safe_number(v: Any) -> float | None:
+    """
+    Converte valores numéricos aceitando:
+    - Padrão internacional: 1234.56
+    - Padrão BR: 1.234,56 ou 1234,56
+    Importante: NÃO remove ponto decimal de coordenadas como -3.7397117.
+    """
     if v is None:
         return None
-    try:
-        s = str(v).strip().replace(".", "").replace(",", ".")
-        if s == "":
-            return None
-        return float(s)
-    except Exception:
+
+    # Se já é número, não mexe. Era aqui que quebrava as coordenadas no fluxo anterior.
+    if isinstance(v, (int, float)):
         try:
             return float(v)
         except Exception:
             return None
+
+    s = str(v).strip()
+    if s == "" or s.lower() in ("nan", "none", "null"):
+        return None
+
+    s = s.replace(" ", "")
+
+    # Tem vírgula e ponto: decide qual é o decimal pelo último separador
+    if "," in s and "." in s:
+        if s.rfind(",") > s.rfind("."):
+            # vírgula é decimal, ponto é milhar
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            # ponto é decimal, vírgula é milhar
+            s = s.replace(",", "")
+    elif "," in s:
+        # só vírgula: vírgula é decimal
+        s = s.replace(".", "")
+        s = s.replace(",", ".")
+    else:
+        # só ponto ou nenhum separador: mantém
+        pass
+
+    try:
+        return float(s)
+    except Exception:
+        return None
+
 
 def pick_prop(props: dict[str, Any], keys: Iterable[str]) -> Any:
     if not isinstance(props, dict):
@@ -75,6 +108,7 @@ def pick_prop(props: dict[str, Any], keys: Iterable[str]) -> Any:
                 return props.get(kk)
     return None
 
+
 def get_latlon(props: dict[str, Any], geom: dict[str, Any]) -> tuple[float | None, float | None]:
     # prioridade: propriedades lat/lon
     lat = pick_prop(props, ["lat", "LAT", "latitude", "Latitude"])
@@ -85,7 +119,7 @@ def get_latlon(props: dict[str, Any], geom: dict[str, Any]) -> tuple[float | Non
     if latn is not None and lonn is not None:
         return latn, lonn
 
-    # fallback: geometry Point
+    # fallback: geometry Point (GeoJSON: [lon, lat])
     try:
         if (geom or {}).get("type") == "Point":
             coords = (geom or {}).get("coordinates") or []
@@ -94,6 +128,7 @@ def get_latlon(props: dict[str, Any], geom: dict[str, Any]) -> tuple[float | Non
     except Exception:
         pass
     return None, None
+
 
 def normalize_feature(ft: dict[str, Any], tipo: str | None = None, force_nome_from: str | None = None) -> dict[str, Any]:
     props = (ft or {}).get("properties") or {}
@@ -130,6 +165,7 @@ def normalize_feature(ft: dict[str, Any], tipo: str | None = None, force_nome_fr
         "id": safe_text(pick_prop(props, ALIASES["id"])),
     }
 
+
 def normalize_geojson(gj: dict[str, Any], tipo: str | None = None, force_nome_from: str | None = None) -> list[dict[str, Any]]:
     feats = (gj or {}).get("features") or []
     rows: list[dict[str, Any]] = []
@@ -140,9 +176,11 @@ def normalize_geojson(gj: dict[str, Any], tipo: str | None = None, force_nome_fr
             continue
     return rows
 
+
 def circle_radius(votes: float) -> float:
     v = max(0.0, float(votes))
     return 180 + (math.sqrt(v) * 32)
+
 
 def _flatten_coords(coords):
     out = []
@@ -159,6 +197,7 @@ def _flatten_coords(coords):
         for c in coords:
             out.extend(_flatten_coords(c))
     return out
+
 
 def bounds_center_from_geojson(gj: dict[str, Any]):
     if not gj:
