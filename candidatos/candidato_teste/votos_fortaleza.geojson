@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "votos_fortaleza",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "NM_MUNICIPIO": "FORTALEZA", "NR_ZONA": 1, "NR_VOTAVEL": 16111, "NR_SECAO": 931, "NM_VOTAVEL": "VOTOS TESTE", "QT_VOTOS": 28, "CODIGO_UNICO": "0001-1074", "NM_LOCAL_VOTACAO": "BNB CLUBE", "DS_LOCAL_VOTACAO_ENDERECO": "AVENIDA  SANTOS DUMONT  3646", "Latitude": -3.7397117, "Longitude": -38.4876361 }, "geometry": { "type": "Point", "coordinates": [ -38.4876361, -3.7397117 ] } },
 { "type": "Feature", "properties": { "NM_MUNICIPIO": "FORTALEZA", "NR_ZONA": 113, "NR_VOTAVEL": 16111, "NR_SECAO": 205, "NM_VOTAVEL": "VOTOS TESTE", "QT_VOTOS": 21, "CODIGO_UNICO": "0113-1279", "NM_LOCAL_VOTACAO": "COLÉGIO CHRISTUS PRÉ - UNIVERSITÁRIO", "DS_LOCAL_VOTACAO_ENDERECO": "RUA CRUZ SALDANHA", "Latitude": -3.7369848, "Longitude": -38.5536243 }, "geometry": { "type": "Point", "coordinates": [ -38.5536243, -3.7369848 ] } },

@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "name": "votos_municipios",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "NR_VOTAVEL": 16111, "NM_VOTAVEL": "VOTOS TESTE", "NM_MUNICIPIO": "ABAIARA", "TOTAL_VOTOS_MUNICIPIO": 33, "MUNICIPIO": "Abaiara", "LATITUDE": -7.3599, "LONGITUDE": -39.0489 }, "geometry": { "type": "Point", "coordinates": [ -39.0489, -7.3599 ] } },
 { "type": "Feature", "properties": { "NR_VOTAVEL": 16111, "NM_VOTAVEL": "VOTOS TESTE", "NM_MUNICIPIO": "ACARAPE", "TOTAL_VOTOS_MUNICIPIO": 114, "MUNICIPIO": "Acarape", "LATITUDE": -4.2241, "LONGITUDE": -38.7059 }, "geometry": { "type": "Point", "coordinates": [ -38.7059, -4.2241 ] } },
