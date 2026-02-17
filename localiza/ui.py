@@ -336,8 +336,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     out = st_folium(
         m,
-        width=1200,
-        height=720,
+        width=None,
+        height=800,
         returned_objects=["all_drawings", "last_active_drawing"],
         key=f"folium_{candidate_folder.name}",
     )
