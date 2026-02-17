@@ -189,18 +189,20 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
             "type": layer["stem"],
         }
         stl = resolve_layer_style(meta, styles)
-        # só geojson layers (não pontos de votos)
         add_geojson_layer(m, layer["stem"], layer["geojson"], stl)
-
-    # pontos de votos (com heatmap opcional)
-    add_points_layer(
-        m,
-        name="Votos",
-        df_points=df_f,
-        style={"mode": "circle", "graduated": True, "color": "#1f6feb", "fillColor": "#1f6feb", "fillOpacity": 0.55, "weight": 2},
-        popup_cols=["local_votacao", "Município", "Bairro/Distrito", "Endereço", "qt_votos"],
-        use_heatmap=True,
-    )
+    
+    # Adicionar o arquivo de votos selecionado
+    if votos_file and votos_file.exists():
+        votos_gj = read_geojson(votos_file)
+        if votos_gj:
+            meta = {
+                "stem": votos_file.stem,
+                "filename": votos_file.name,
+                "geom": "Point",
+                "type": votos_file.stem,
+            }
+            stl = resolve_layer_style(meta, styles)
+            add_geojson_layer(m, votos_file.stem, votos_gj, stl)
 
     finalize_map(m)
 
