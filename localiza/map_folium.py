@@ -197,6 +197,9 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                     "NR_ZONA": "📍 Zona"
                 }
             
+            # Coletar pontos para heatmap se for municipios
+            heat_pts = []
+            
             for feature in geojson.get("features", []):
                 geom = feature.get("geometry", {})
                 props = feature.get("properties", {})
@@ -206,6 +209,10 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                     if len(coords) >= 2:
                         votos = _to_float(props.get(votos_col)) or 0
                         radius = _calculate_graduated_size(votos, min_votos, max_votos)
+                        
+                        # Adicionar ao heatmap se for municipios
+                        if is_municipios and votos > 0:
+                            heat_pts.append([coords[1], coords[0], votos])
                         
                         # Criar tooltip customizado
                         tooltip_lines = []
@@ -227,6 +234,11 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                         ).add_to(fg)
             
             fg.add_to(m)
+            
+            # Adicionar heatmap para votos_municipios
+            if is_municipios and heat_pts:
+                HeatMap(heat_pts, name=f"{name} - Mapa de Calor", show=True, min_opacity=0.4, radius=15, blur=20).add_to(m)
+            
             return
     
     # Estilo padrão para polígonos e linhas
