@@ -145,7 +145,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                 geom = feature.get("geometry", {})
                 props = feature.get("properties", {})
                 
-                if geom.get("type") == "Point":
+                if isinstance(geom, dict) and geom.get("type") == "Point":
                     coords = geom.get("coordinates", [])
                     if len(coords) >= 2:
                         icon_url = style.get("iconUrl", style.get("iconPath"))
@@ -201,7 +201,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                 geom = feature.get("geometry", {})
                 props = feature.get("properties", {})
                 
-                if geom.get("type") == "Point":
+                if isinstance(geom, dict) and geom.get("type") == "Point":
                     coords = geom.get("coordinates", [])
                     if len(coords) >= 2:
                         votos = _to_float(props.get(votos_col)) or 0
