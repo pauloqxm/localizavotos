@@ -164,6 +164,44 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             fg.add_to(m)
             return
     
+    # Simbologia graduada para pontos de votos
+    if "votos" in name.lower() and geojson.get("features"):
+        first_geom = geojson["features"][0].get("geometry", {}).get("type")
+        if first_geom == "Point":
+            fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
+            
+            # Calcular min/max para graduação
+            votos_vals = [_to_float(f.get("properties", {}).get("QT_VOTOS")) or 0 for f in geojson["features"]]
+            min_votos = min(votos_vals) if votos_vals else 0
+            max_votos = max(votos_vals) if votos_vals else 0
+            
+            for feature in geojson.get("features", []):
+                geom = feature.get("geometry", {})
+                props = feature.get("properties", {})
+                
+                if geom.get("type") == "Point":
+                    coords = geom.get("coordinates", [])
+                    if len(coords) >= 2:
+                        votos = _to_float(props.get("QT_VOTOS")) or 0
+                        radius = _calculate_graduated_size(votos, min_votos, max_votos)
+                        
+                        tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
+                        
+                        folium.CircleMarker(
+                            location=[coords[1], coords[0]],
+                            radius=radius,
+                            color=style.get("color", "#1f6feb"),
+                            weight=2,
+                            fill=True,
+                            fill_color=style.get("fillColor", "#1f6feb"),
+                            fill_opacity=0.6,
+                            tooltip=folium.Tooltip(tooltip_text) if tooltip_text else None,
+                            popup=folium.Popup(tooltip_text, max_width=300) if tooltip_text else None,
+                        ).add_to(fg)
+            
+            fg.add_to(m)
+            return
+    
     # Estilo padrão para polígonos e linhas
     def _style(_):
         return {
