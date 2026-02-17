@@ -3,6 +3,52 @@ from __future__ import annotations
 import altair as alt
 import pandas as pd
 
+def chart_top_municipios(df: pd.DataFrame, top_n: int = 15):
+    """Gráfico dos top municípios com mais votos"""
+    col = "Município" if "Município" in df.columns else "municipio"
+    by_mun = (
+        df.groupby(col, dropna=False)["qt_votos"]
+        .sum()
+        .sort_values(ascending=False)
+        .reset_index()
+    )
+    by_mun = by_mun[by_mun[col].astype(str).str.strip() != ""].head(top_n)
+    if by_mun.empty:
+        return None
+    return (
+        alt.Chart(by_mun)
+        .mark_bar(color="#2ecc71")
+        .encode(
+            x=alt.X("qt_votos:Q", title="Votos"),
+            y=alt.Y(f"{col}:N", sort="-x", title="Município"),
+            tooltip=[alt.Tooltip(f"{col}:N"), alt.Tooltip("qt_votos:Q", format=",.0f")],
+        )
+        .properties(height=400)
+    )
+
+def chart_bottom_municipios(df: pd.DataFrame, bottom_n: int = 15):
+    """Gráfico dos municípios com menos votos"""
+    col = "Município" if "Município" in df.columns else "municipio"
+    by_mun = (
+        df.groupby(col, dropna=False)["qt_votos"]
+        .sum()
+        .sort_values(ascending=True)
+        .reset_index()
+    )
+    by_mun = by_mun[by_mun[col].astype(str).str.strip() != ""].head(bottom_n)
+    if by_mun.empty:
+        return None
+    return (
+        alt.Chart(by_mun)
+        .mark_bar(color="#e74c3c")
+        .encode(
+            x=alt.X("qt_votos:Q", title="Votos"),
+            y=alt.Y(f"{col}:N", sort="x", title="Município"),
+            tooltip=[alt.Tooltip(f"{col}:N"), alt.Tooltip("qt_votos:Q", format=",.0f")],
+        )
+        .properties(height=400)
+    )
+
 def chart_top_locais(df: pd.DataFrame, top_n: int = 13):
     by_local = (
         df.groupby("local_votacao", dropna=False)["qt_votos"]

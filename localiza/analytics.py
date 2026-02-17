@@ -34,7 +34,13 @@ def load_votos_df(votos_file: Path) -> pd.DataFrame:
     else:
         df["Bairro/Distrito"] = df["bairro"]
 
-    df["qt_votos"] = pd.to_numeric(df["qt_votos"], errors="coerce").fillna(0.0)
+    # Detectar se é arquivo de municípios e usar coluna apropriada
+    if "TOTAL_VOTOS_MUNICIPIO" in df.columns:
+        df["qt_votos"] = pd.to_numeric(df["TOTAL_VOTOS_MUNICIPIO"], errors="coerce").fillna(0.0)
+    elif "QT_VOTOS" in df.columns:
+        df["qt_votos"] = pd.to_numeric(df["QT_VOTOS"], errors="coerce").fillna(0.0)
+    else:
+        df["qt_votos"] = pd.to_numeric(df["qt_votos"], errors="coerce").fillna(0.0)
 
     df = df.dropna(subset=["lat", "lon"])
     return df

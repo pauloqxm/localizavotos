@@ -14,7 +14,7 @@ from .io_geo import discover_layers_geojson, read_geojson
 from .schema import bounds_center_from_geojson
 from .styles import load_layer_styles, resolve_layer_style
 from .map_folium import build_map, add_geojson_layer, add_points_layer, finalize_map
-from .charts import chart_top_locais, chart_top_bairros, chart_hist_votos
+from .charts import chart_top_locais, chart_top_bairros, chart_hist_votos, chart_top_municipios, chart_bottom_municipios
 
 try:
     from streamlit_folium import st_folium
@@ -169,19 +169,39 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     # KPIs
     c1, c2, c3, c4 = st.columns(4)
+    
+    # Detectar se é arquivo de municípios
+    is_municipios = "TOTAL_VOTOS_MUNICIPIO" in df_f.columns or "municipios" in (votos_file.stem.lower() if votos_file else "")
+    
     total_votos = int(df_f["qt_votos"].sum()) if not df_f.empty else 0
     total_pontos = int(len(df_f))
-    top_local = (
-        df_f.groupby("local_votacao")["qt_votos"].sum().sort_values(ascending=False).head(1)
-        if (not df_f.empty and "local_votacao" in df_f.columns) else pd.Series(dtype=float)
-    )
-    top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
-    top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
-
-    c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_votos:,}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
-    c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_pontos:,}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
-    c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_v:,}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
-    c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
+    
+    if is_municipios:
+        # KPIs para municípios
+        top_mun = (
+            df_f.groupby("Município")["qt_votos"].sum().sort_values(ascending=False).head(1)
+            if not df_f.empty else pd.Series(dtype=float)
+        )
+        top_mun_name = (top_mun.index[0] if len(top_mun) else "Sem dados")
+        top_mun_v = int(top_mun.iloc[0]) if len(top_mun) else 0
+        
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_votos:,}</div><div class='l'>Total de votos</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_pontos:,}</div><div class='l'>Municípios</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_v:,}</div><div class='l'>Maior votação</div></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_name}</div><div class='l'>Município destaque</div></div>", unsafe_allow_html=True)
+    else:
+        # KPIs para locais de votação
+        top_local = (
+            df_f.groupby("local_votacao")["qt_votos"].sum().sort_values(ascending=False).head(1)
+            if (not df_f.empty and "local_votacao" in df_f.columns) else pd.Series(dtype=float)
+        )
+        top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
+        top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
+        
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_votos:,}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_pontos:,}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_v:,}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
 
     # ---- Mapa
     st.subheader("🗺️ Mapa")
@@ -260,29 +280,51 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         st.info("Sem dados para gráficos com os filtros e a seleção atual.")
         return
 
-    g1, g2 = st.columns(2)
-    with g1:
-        st.markdown("Top locais")
-        ch = chart_top_locais(base_df)
-        if ch is None:
-            st.info("Sem locais preenchidos.")
-        else:
-            st.altair_chart(ch, use_container_width=True)
+    # Detectar tipo de arquivo para mostrar gráficos apropriados
+    if is_municipios:
+        g1, g2 = st.columns(2)
+        with g1:
+            st.markdown("🏆 Top 15 municípios com mais votos")
+            ch = chart_top_municipios(base_df, top_n=15)
+            if ch is None:
+                st.info("Sem dados de municípios.")
+            else:
+                st.altair_chart(ch, use_container_width=True)
 
-    with g2:
-        st.markdown("Top bairros/distritos")
-        ch = chart_top_bairros(base_df)
-        if ch is None:
-            st.info("Sem bairros preenchidos.")
-        else:
-            st.altair_chart(ch, use_container_width=True)
+        with g2:
+            st.markdown("📉 15 municípios com menos votos")
+            ch = chart_bottom_municipios(base_df, bottom_n=15)
+            if ch is None:
+                st.info("Sem dados de municípios.")
+            else:
+                st.altair_chart(ch, use_container_width=True)
+    else:
+        g1, g2 = st.columns(2)
+        with g1:
+            st.markdown("Top locais")
+            ch = chart_top_locais(base_df)
+            if ch is None:
+                st.info("Sem locais preenchidos.")
+            else:
+                st.altair_chart(ch, use_container_width=True)
 
-    st.markdown("Distribuição por faixa de votos")
-    ch3 = chart_hist_votos(base_df)
-    if ch3 is not None:
-        st.altair_chart(ch3, use_container_width=True)
+        with g2:
+            st.markdown("Top bairros/distritos")
+            ch = chart_top_bairros(base_df)
+            if ch is None:
+                st.info("Sem bairros preenchidos.")
+            else:
+                st.altair_chart(ch, use_container_width=True)
+
+        st.markdown("Distribuição por faixa de votos")
+        ch3 = chart_hist_votos(base_df)
+        if ch3 is not None:
+            st.altair_chart(ch3, use_container_width=True)
 
     st.subheader("📄 Tabela")
-    cols_show = ["local_votacao", "Município", "Bairro/Distrito", "Endereço", "qt_votos", "lat", "lon"]
+    if is_municipios:
+        cols_show = ["Município", "qt_votos", "lat", "lon"]
+    else:
+        cols_show = ["local_votacao", "Município", "Bairro/Distrito", "Endereço", "qt_votos", "lat", "lon"]
     cols_show = [c for c in cols_show if c in base_df.columns]
     st.dataframe(base_df[cols_show].sort_values("qt_votos", ascending=False), use_container_width=True)
