@@ -49,25 +49,52 @@ def chart_bottom_municipios(df: pd.DataFrame, bottom_n: int = 15):
         .properties(height=400)
     )
 
-def chart_top_locais(df: pd.DataFrame, top_n: int = 13):
+def chart_top_locais(df: pd.DataFrame, top_n: int = 15):
+    # Detectar coluna de local
+    local_col = "NM_LOCAL_VOTACAO" if "NM_LOCAL_VOTACAO" in df.columns else "local_votacao"
+    
     by_local = (
-        df.groupby("local_votacao", dropna=False)["qt_votos"]
+        df.groupby(local_col, dropna=False)["qt_votos"]
         .sum()
         .sort_values(ascending=False)
         .reset_index()
     )
-    by_local = by_local[by_local["local_votacao"].astype(str).str.strip() != ""].head(top_n)
+    by_local = by_local[by_local[local_col].astype(str).str.strip() != ""].head(top_n)
     if by_local.empty:
         return None
     return (
         alt.Chart(by_local)
-        .mark_bar()
+        .mark_bar(color="#2ecc71")
         .encode(
             x=alt.X("qt_votos:Q", title="Votos"),
-            y=alt.Y("local_votacao:N", sort="-x", title="Local de votação"),
-            tooltip=["local_votacao:N", alt.Tooltip("qt_votos:Q", format=",.0f")],
+            y=alt.Y(f"{local_col}:N", sort="-x", title="Local de votação"),
+            tooltip=[alt.Tooltip(f"{local_col}:N"), alt.Tooltip("qt_votos:Q", format=",.0f")],
         )
-        .properties(height=340)
+        .properties(height=400)
+    )
+
+def chart_bottom_locais(df: pd.DataFrame, bottom_n: int = 15):
+    # Detectar coluna de local
+    local_col = "NM_LOCAL_VOTACAO" if "NM_LOCAL_VOTACAO" in df.columns else "local_votacao"
+    
+    by_local = (
+        df.groupby(local_col, dropna=False)["qt_votos"]
+        .sum()
+        .sort_values(ascending=True)
+        .reset_index()
+    )
+    by_local = by_local[by_local[local_col].astype(str).str.strip() != ""].head(bottom_n)
+    if by_local.empty:
+        return None
+    return (
+        alt.Chart(by_local)
+        .mark_bar(color="#e74c3c")
+        .encode(
+            x=alt.X("qt_votos:Q", title="Votos"),
+            y=alt.Y(f"{local_col}:N", sort="x", title="Local de votação"),
+            tooltip=[alt.Tooltip(f"{local_col}:N"), alt.Tooltip("qt_votos:Q", format=",.0f")],
+        )
+        .properties(height=400)
     )
 
 def chart_top_bairros(df: pd.DataFrame, top_n: int = 13):

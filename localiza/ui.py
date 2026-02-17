@@ -14,7 +14,7 @@ from .io_geo import discover_layers_geojson, read_geojson
 from .schema import bounds_center_from_geojson
 from .styles import load_layer_styles, resolve_layer_style
 from .map_folium import build_map, add_geojson_layer, add_points_layer, finalize_map
-from .charts import chart_top_locais, chart_top_bairros, chart_hist_votos, chart_top_municipios, chart_bottom_municipios
+from .charts import chart_top_locais, chart_bottom_locais, chart_top_bairros, chart_hist_votos, chart_top_municipios, chart_bottom_municipios
 
 try:
     from streamlit_folium import st_folium
@@ -381,6 +381,24 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     # ---- Gráficos
     st.subheader("📊 Gráficos")
+    
+    # Slider para filtrar por intervalo de votos
+    if not df_f.empty and "qt_votos" in df_f.columns:
+        min_votos = int(df_f["qt_votos"].min())
+        max_votos = int(df_f["qt_votos"].max())
+        
+        if min_votos < max_votos:
+            st.markdown("**Filtrar por quantidade de votos:**")
+            votos_range = st.slider(
+                "Intervalo de votos",
+                min_value=min_votos,
+                max_value=max_votos,
+                value=(min_votos, max_votos),
+                label_visibility="collapsed"
+            )
+            # Aplicar filtro de intervalo
+            df_f = df_f[(df_f["qt_votos"] >= votos_range[0]) & (df_f["qt_votos"] <= votos_range[1])]
+    
     base_df = df_sel if st.session_state.get("selection_geojson") else df_f
     if base_df.empty:
         st.info("Sem dados para gráficos com os filtros e a seleção atual.")
@@ -407,21 +425,26 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     else:
         g1, g2 = st.columns(2)
         with g1:
-            st.markdown("Top locais")
-            ch = chart_top_locais(base_df)
+            st.markdown("🏆 Top 15 locais com mais votos")
+            ch = chart_top_locais(base_df, top_n=15)
             if ch is None:
                 st.info("Sem locais preenchidos.")
             else:
                 st.altair_chart(ch, use_container_width=True)
 
         with g2:
-            st.markdown("Top bairros/distritos")
-            ch = chart_top_bairros(base_df)
+            st.markdown("📉 15 locais com menos votos")
+            ch = chart_bottom_locais(base_df, bottom_n=15)
             if ch is None:
-                st.info("Sem bairros preenchidos.")
+                st.info("Sem locais preenchidos.")
             else:
                 st.altair_chart(ch, use_container_width=True)
 
+        st.markdown("Top bairros/distritos")
+        ch2 = chart_top_bairros(base_df)
+        if ch2 is not None:
+            st.altair_chart(ch2, use_container_width=True)
+        
         st.markdown("Distribuição por faixa de votos")
         ch3 = chart_hist_votos(base_df)
         if ch3 is not None:
