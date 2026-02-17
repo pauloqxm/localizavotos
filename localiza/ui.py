@@ -273,8 +273,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     styles = load_layer_styles()
     
-    # Verificar se Fortaleza está no filtro de municípios
-    fortaleza_ativo = not mun or "FORTALEZA" in [m.upper() for m in mun]
+    # Verificar se a base de votos selecionada é de Fortaleza
+    fortaleza_ativo = votos_file and "fortaleza" in votos_file.stem.lower()
 
     for layer in common_layers + cand_layers:
         # Pular camadas de Fortaleza se Fortaleza não estiver no filtro
