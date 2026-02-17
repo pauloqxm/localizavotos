@@ -197,7 +197,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         m,
         name="Votos",
         df_points=df_f,
-        style={"mode": "circle", "radius_mode": "votes", "color": "#1f6feb", "fillColor": "#1f6feb", "fillOpacity": 0.55, "weight": 2},
+        style={"mode": "circle", "graduated": True, "color": "#1f6feb", "fillColor": "#1f6feb", "fillOpacity": 0.55, "weight": 2},
         popup_cols=["local_votacao", "Município", "Bairro/Distrito", "Endereço", "qt_votos"],
         use_heatmap=True,
     )

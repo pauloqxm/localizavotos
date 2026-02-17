@@ -188,6 +188,19 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
     ).add_to(m)
 
 
+def _calculate_graduated_size(value: float, min_val: float, max_val: float, num_classes: int = 5) -> float:
+    """Calcula o tamanho do círculo baseado em classes de intervalo igual."""
+    if max_val == min_val:
+        return 8
+    
+    interval = (max_val - min_val) / num_classes
+    class_idx = min(int((value - min_val) / interval), num_classes - 1)
+    
+    # Tamanhos de 4 a 20 pixels
+    sizes = [4, 8, 12, 16, 20]
+    return sizes[class_idx]
+
+
 def add_points_layer(
     m: folium.Map,
     name: str,
@@ -202,11 +215,20 @@ def add_points_layer(
     fill = style.get("fillColor", color)
     radius = float(style.get("radius", 6))
     mode = style.get("mode", "circle")
+    graduated = style.get("graduated", False)
 
     fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
     fg.add_to(m)
 
     heat_pts = []
+    
+    # Calcular min/max para simbologia graduada
+    min_votos = max_votos = 0
+    if graduated and "qt_votos" in df_points.columns:
+        votos_vals = df_points["qt_votos"].dropna()
+        if len(votos_vals) > 0:
+            min_votos = float(votos_vals.min())
+            max_votos = float(votos_vals.max())
 
     for _, r in df_points.iterrows():
         fixed = _fix_latlon(r.get("lat"), r.get("lon"))
@@ -235,11 +257,19 @@ def add_points_layer(
         html += "</div>"
         popup = folium.Popup(html, max_width=380)
         tooltip = folium.Tooltip(tooltip_text.strip() or "Clique para detalhes")
+        
+        # Determinar tamanho do círculo
+        if graduated:
+            circle_size = _calculate_graduated_size(votos, min_votos, max_votos)
+        elif style.get("radius_mode") == "votes":
+            circle_size = circle_radius(votos)
+        else:
+            circle_size = radius
 
         if mode == "circle":
             folium.Circle(
                 location=[lat_f, lon_f],
-                radius=circle_radius(votos) if style.get("radius_mode") == "votes" else radius,
+                radius=circle_size if not graduated else circle_size * 5,
                 color=color,
                 weight=float(style.get("weight", 2)),
                 fill=True,
@@ -251,7 +281,7 @@ def add_points_layer(
         else:
             folium.CircleMarker(
                 location=[lat_f, lon_f],
-                radius=radius,
+                radius=circle_size if graduated else radius,
                 color=color,
                 weight=float(style.get("weight", 2)),
                 fill=True,
