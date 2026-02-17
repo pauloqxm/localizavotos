@@ -40,16 +40,15 @@ def hide_sidebar():
           [data-testid="collapsedControl"] { display: none !important; }
           .block-container { padding-top: 1.2rem; }
           .lv-header { 
-            display: inline-block;
-            padding: 16px 32px;
+            width: 100%;
+            padding: 20px 32px;
             border-radius: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            margin-bottom: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 24px;
+            transition: box-shadow 0.2s;
           }
           .lv-header:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
           }
           .lv-title { 
@@ -130,7 +129,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     header(title, subtitle)
 
     # ---- filtros na página (sem sidebar)
-    st.markdown("<div class='lv-card'>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns([2,2,2,2])
 
     votos_file = votos_files[0] if votos_files else None
@@ -160,8 +158,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         bai = st.multiselect("Bairro/Distrito", bairros, default=[])
     with col4:
         loc = st.multiselect("Local de votação", locais, default=[])
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     df_f = df.copy()
     if mun:
