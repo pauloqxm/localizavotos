@@ -229,6 +229,23 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_local_v)}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
         c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
 
+    # ---- Slider de filtro por quantidade de votos
+    if not df_f.empty and "qt_votos" in df_f.columns:
+        min_votos = int(df_f["qt_votos"].min())
+        max_votos = int(df_f["qt_votos"].max())
+        
+        if min_votos < max_votos:
+            st.markdown("**Filtrar por quantidade de votos:**")
+            votos_range = st.slider(
+                "Intervalo de votos",
+                min_value=min_votos,
+                max_value=max_votos,
+                value=(min_votos, max_votos),
+                label_visibility="collapsed"
+            )
+            # Aplicar filtro de intervalo
+            df_f = df_f[(df_f["qt_votos"] >= votos_range[0]) & (df_f["qt_votos"] <= votos_range[1])]
+
     # ---- Mapa
     st.subheader("🗺️ Mapa")
 
@@ -381,23 +398,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     # ---- Gráficos
     st.subheader("📊 Gráficos")
-    
-    # Slider para filtrar por intervalo de votos
-    if not df_f.empty and "qt_votos" in df_f.columns:
-        min_votos = int(df_f["qt_votos"].min())
-        max_votos = int(df_f["qt_votos"].max())
-        
-        if min_votos < max_votos:
-            st.markdown("**Filtrar por quantidade de votos:**")
-            votos_range = st.slider(
-                "Intervalo de votos",
-                min_value=min_votos,
-                max_value=max_votos,
-                value=(min_votos, max_votos),
-                label_visibility="collapsed"
-            )
-            # Aplicar filtro de intervalo
-            df_f = df_f[(df_f["qt_votos"] >= votos_range[0]) & (df_f["qt_votos"] <= votos_range[1])]
     
     base_df = df_sel if st.session_state.get("selection_geojson") else df_f
     if base_df.empty:
