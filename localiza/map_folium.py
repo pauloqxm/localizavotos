@@ -170,20 +170,32 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
         if first_geom == "Point":
             fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
             
+            # Detectar qual coluna de votos usar
+            is_municipios = "municipios" in name.lower()
+            votos_col = "TOTAL_VOTOS_MUNICIPIO" if is_municipios else "QT_VOTOS"
+            
             # Calcular min/max para graduação
-            votos_vals = [_to_float(f.get("properties", {}).get("QT_VOTOS")) or 0 for f in geojson["features"]]
+            votos_vals = [_to_float(f.get("properties", {}).get(votos_col)) or 0 for f in geojson["features"]]
             min_votos = min(votos_vals) if votos_vals else 0
             max_votos = max(votos_vals) if votos_vals else 0
             
             # Mapeamento de campos com emojis
-            field_map = {
-                "NM_MUNICIPIO": "🏛️ Município",
-                "NM_LOCAL_VOTACAO": "📍 Local de Votação",
-                "NM_VOTAVEL": "👤 Nome",
-                "NR_VOTAVEL": "🔢 N°",
-                "QT_VOTOS": "🗳️ Quant. Votos",
-                "NR_ZONA": "📍 Zona"
-            }
+            if is_municipios:
+                field_map = {
+                    "NM_MUNICIPIO": "🏛️ Município",
+                    "NM_VOTAVEL": "👤 Nome",
+                    "NR_VOTAVEL": "🔢 N°",
+                    "TOTAL_VOTOS_MUNICIPIO": "🗳️ Total Votos",
+                }
+            else:
+                field_map = {
+                    "NM_MUNICIPIO": "🏛️ Município",
+                    "NM_LOCAL_VOTACAO": "📍 Local de Votação",
+                    "NM_VOTAVEL": "👤 Nome",
+                    "NR_VOTAVEL": "🔢 N°",
+                    "QT_VOTOS": "🗳️ Quant. Votos",
+                    "NR_ZONA": "📍 Zona"
+                }
             
             for feature in geojson.get("features", []):
                 geom = feature.get("geometry", {})
@@ -192,7 +204,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                 if geom.get("type") == "Point":
                     coords = geom.get("coordinates", [])
                     if len(coords) >= 2:
-                        votos = _to_float(props.get("QT_VOTOS")) or 0
+                        votos = _to_float(props.get(votos_col)) or 0
                         radius = _calculate_graduated_size(votos, min_votos, max_votos)
                         
                         # Criar tooltip customizado
