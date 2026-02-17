@@ -175,6 +175,16 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             min_votos = min(votos_vals) if votos_vals else 0
             max_votos = max(votos_vals) if votos_vals else 0
             
+            # Mapeamento de campos com emojis
+            field_map = {
+                "NM_MUNICIPIO": "🏛️ Município",
+                "NM_LOCAL_VOTACAO": "📍 Local de Votação",
+                "NM_VOTAVEL": "👤 Nome",
+                "NR_VOTAVEL": "🔢 N°",
+                "QT_VOTOS": "🗳️ Quant. Votos",
+                "NR_ZONA": "📍 Zona"
+            }
+            
             for feature in geojson.get("features", []):
                 geom = feature.get("geometry", {})
                 props = feature.get("properties", {})
@@ -185,7 +195,12 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                         votos = _to_float(props.get("QT_VOTOS")) or 0
                         radius = _calculate_graduated_size(votos, min_votos, max_votos)
                         
-                        tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
+                        # Criar tooltip customizado
+                        tooltip_lines = []
+                        for field, label in field_map.items():
+                            if field in props and props[field]:
+                                tooltip_lines.append(f"<b>{label}</b>: {props[field]}")
+                        tooltip_text = "<br>".join(tooltip_lines)
                         
                         folium.CircleMarker(
                             location=[coords[1], coords[0]],
