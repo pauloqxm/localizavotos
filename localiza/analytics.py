@@ -36,6 +36,22 @@ def load_votos_df(votos_file: Path) -> pd.DataFrame:
 
     # Usar sempre qt_votos (já normalizado pelo schema)
     df["qt_votos"] = pd.to_numeric(df["qt_votos"], errors="coerce").fillna(0.0)
+    
+    # Extrair colunas originais do GeoJSON se existirem nas properties
+    if "properties" in df.columns:
+        for idx, row in df.iterrows():
+            props = row.get("properties", {})
+            if isinstance(props, dict):
+                if "NM_MUNICIPIO" in props and "NM_MUNICIPIO" not in df.columns:
+                    df.loc[idx, "NM_MUNICIPIO"] = props.get("NM_MUNICIPIO")
+                if "NM_LOCAL_VOTACAO" in props and "NM_LOCAL_VOTACAO" not in df.columns:
+                    df.loc[idx, "NM_LOCAL_VOTACAO"] = props.get("NM_LOCAL_VOTACAO")
+        
+        # Propagar valores se as colunas foram criadas
+        if "NM_MUNICIPIO" in df.columns:
+            df["NM_MUNICIPIO"] = df["NM_MUNICIPIO"].fillna(df["Município"])
+        if "NM_LOCAL_VOTACAO" in df.columns:
+            df["NM_LOCAL_VOTACAO"] = df["NM_LOCAL_VOTACAO"].fillna(df["local_votacao"])
 
     df = df.dropna(subset=["lat", "lon"])
     return df

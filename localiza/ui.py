@@ -148,10 +148,16 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         st.error("Sem dados de votos ou sem coordenadas válidas.")
         st.stop()
 
-    municipios = sorted([m for m in df["Município"].dropna().astype(str).unique() if m.strip()]) if "Município" in df.columns else []
+    # Detectar colunas a usar (priorizar colunas originais do GeoJSON)
+    if "NM_MUNICIPIO" in df.columns:
+        municipios = sorted([m for m in df["NM_MUNICIPIO"].dropna().astype(str).unique() if m.strip()])
+        mun_col = "NM_MUNICIPIO"
+    else:
+        municipios = sorted([m for m in df["Município"].dropna().astype(str).unique() if m.strip()]) if "Município" in df.columns else []
+        mun_col = "Município"
+    
     bairros = sorted([b for b in df["Bairro/Distrito"].dropna().astype(str).unique() if b.strip()]) if "Bairro/Distrito" in df.columns else []
     
-    # Usar NM_LOCAL_VOTACAO se existir, senão usar local_votacao
     if "NM_LOCAL_VOTACAO" in df.columns:
         locais = sorted([l for l in df["NM_LOCAL_VOTACAO"].dropna().astype(str).unique() if l.strip()])
         local_col = "NM_LOCAL_VOTACAO"
@@ -168,7 +174,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     df_f = df.copy()
     if mun:
-        df_f = df_f[df_f["Município"].isin(mun)]
+        df_f = df_f[df_f[mun_col].isin(mun)]
     if bai and "Bairro/Distrito" in df_f.columns:
         df_f = df_f[df_f["Bairro/Distrito"].isin(bai)]
     if loc:
@@ -190,7 +196,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     if is_municipios:
         # KPIs para municípios
         top_mun = (
-            df_f.groupby("Município")["qt_votos"].sum().sort_values(ascending=False).head(1)
+            df_f.groupby(mun_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
             if not df_f.empty else pd.Series(dtype=float)
         )
         top_mun_name = (top_mun.index[0] if len(top_mun) else "Sem dados")
