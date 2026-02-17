@@ -115,11 +115,17 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             "fillOpacity": style.get("fillOpacity", 0.15),
         }
 
+    # Detecta campos disponíveis para tooltip
+    tooltip_fields = []
+    if geojson.get("features"):
+        props = geojson["features"][0].get("properties", {})
+        tooltip_fields = [k for k in props.keys() if k and props[k]]
+    
     folium.GeoJson(
         geojson,
         name=name,
         style_function=_style,
-        tooltip=folium.GeoJsonTooltip(fields=[]),
+        tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
         show=bool(style.get("show", True)),
     ).add_to(m)
 
@@ -156,16 +162,21 @@ def add_points_layer(
             heat_pts.append([lat_f, lon_f, max(0.1, float(votos))])
 
         html = "<div style='min-width:240px'>"
+        tooltip_text = ""
         for c in popup_cols:
             try:
                 if c in r.index:
-                    html += f"<div><b>{c}</b>. {r.get(c, '')}</div>"
+                    val = r.get(c, '')
+                    html += f"<div><b>{c}</b>: {val}</div>"
+                    if c in ["local_votacao", "qt_votos"]:
+                        tooltip_text += f"{c}: {val}\n"
             except Exception:
                 val = r.get(c, "")
                 if val != "":
-                    html += f"<div><b>{c}</b>. {val}</div>"
+                    html += f"<div><b>{c}</b>: {val}</div>"
         html += "</div>"
         popup = folium.Popup(html, max_width=380)
+        tooltip = folium.Tooltip(tooltip_text.strip() or "Clique para detalhes")
 
         if mode == "circle":
             folium.Circle(
@@ -177,6 +188,7 @@ def add_points_layer(
                 fill_color=fill,
                 fill_opacity=float(style.get("fillOpacity", 0.7)),
                 popup=popup,
+                tooltip=tooltip,
             ).add_to(fg)
         else:
             folium.CircleMarker(
@@ -188,6 +200,7 @@ def add_points_layer(
                 fill_color=fill,
                 fill_opacity=float(style.get("fillOpacity", 0.85)),
                 popup=popup,
+                tooltip=tooltip,
             ).add_to(fg)
 
     if use_heatmap and heat_pts:
