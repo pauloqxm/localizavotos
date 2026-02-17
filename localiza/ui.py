@@ -31,12 +31,13 @@ class CandidateSpec:
     base_bounds_file: Path | None = None
 
 def hide_sidebar():
-    st.set_page_config(page_title=APP_NAME, layout="wide", initial_sidebar_state="collapsed")
+    st.set_page_config(page_title=APP_NAME, layout="wide")
     st.markdown(
         """
         <style>
-          [data-testid="stSidebar"][aria-expanded="true"] { display: none; }
-          [data-testid="stSidebarNav"] { display: none; }
+          [data-testid="stSidebar"] { display: none !important; }
+          [data-testid="stSidebarNav"] { display: none !important; }
+          [data-testid="collapsedControl"] { display: none !important; }
           .block-container { padding-top: 1.2rem; }
           .lv-header { 
             display: inline-block;
