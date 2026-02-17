@@ -52,8 +52,13 @@ def resolve_layer_style(layer_meta: dict[str, Any], styles: dict[str, Any]) -> d
     base = default_style_for_kind(layer_type, kind)
     base = merge_dict(base, (defaults.get(kind) or {}))
 
-    # por nome da camada (stem)
-    per = layers_cfg.get(stem) or layers_cfg.get(stem.lower()) or {}
+    # Regra automática: arquivos começando com locais_ herdam estilo de locais_fortaleza
+    if stem.startswith("locais_") and stem not in layers_cfg:
+        per = layers_cfg.get("locais_fortaleza") or {}
+    else:
+        # por nome da camada (stem)
+        per = layers_cfg.get(stem) or layers_cfg.get(stem.lower()) or {}
+    
     # mescla a configuração específica do tipo de geometria
     per_kind = per.get(kind) or {}
     base = merge_dict(base, per_kind)
