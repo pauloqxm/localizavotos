@@ -431,57 +431,32 @@ def finalize_map(m: folium.Map):
     # CSS para garantir visibilidade e responsividade de todos os controles
     css = """
     <style>
-    /* Controles do lado esquerdo */
-    .leaflet-control-layers,
-    .leaflet-control-zoom,
-    .leaflet-control-fullscreen {
-        z-index: 1000 !important;
-        margin-top: 10px !important;
-        margin-left: 10px !important;
-    }
-    
-    /* Controles do lado direito - garantir visibilidade */
-    .leaflet-draw,
-    .leaflet-control-measure,
-    .leaflet-control-mouseposition {
-        z-index: 1000 !important;
-        margin-top: 10px !important;
-        margin-right: 10px !important;
-        display: block !important;
-        visibility: visible !important;
-    }
-    
-    /* Container do lado direito */
-    .leaflet-top.leaflet-right {
+    .leaflet-top.leaflet-right,
+    .leaflet-bottom.leaflet-right {
+        position: absolute !important;
         right: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-end !important;
-        pointer-events: auto !important;
+        z-index: 1000 !important;
+    }
+    
+    .leaflet-top.leaflet-right {
+        top: 0 !important;
     }
     
     .leaflet-bottom.leaflet-right {
-        right: 0 !important;
-        display: block !important;
-        pointer-events: auto !important;
+        bottom: 0 !important;
     }
     
-    /* Responsividade para telas pequenas */
+    .leaflet-draw,
+    .leaflet-control-measure,
+    .leaflet-control-mouseposition {
+        margin: 10px !important;
+    }
+    
     @media (max-width: 768px) {
         .leaflet-draw,
-        .leaflet-control-measure {
-            margin-right: 5px !important;
-            margin-top: 5px !important;
-        }
-        
-        .leaflet-control-layers,
-        .leaflet-control-zoom {
-            margin-left: 5px !important;
-            margin-top: 5px !important;
-        }
-        
-        .leaflet-top.leaflet-right {
-            right: 0 !important;
+        .leaflet-control-measure,
+        .leaflet-control-mouseposition {
+            margin: 5px !important;
         }
     }
     </style>
