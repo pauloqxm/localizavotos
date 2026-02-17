@@ -140,7 +140,8 @@ def normalize_feature(ft: dict[str, Any], tipo: str | None = None, force_nome_fr
     endereco = safe_text(pick_prop(props, ALIASES["endereco"]))
     bairro = safe_text(pick_prop(props, ALIASES["bairro"]))
     local_votacao = safe_text(pick_prop(props, ALIASES["local_votacao"]))
-    qt_votos = safe_number(pick_prop(props, ALIASES["qt_votos"])) or 0.0
+    qt_votos_raw = pick_prop(props, ALIASES["qt_votos"])
+    qt_votos = safe_number(qt_votos_raw) or 0.0
 
     if force_nome_from:
         forced = safe_text(pick_prop(props, [force_nome_from]))
@@ -148,6 +149,10 @@ def normalize_feature(ft: dict[str, Any], tipo: str | None = None, force_nome_fr
             nome = forced
 
     lat, lon = get_latlon(props, geom)
+    
+    # Preservar QT_VOTOS original nas properties se existir
+    if "QT_VOTOS" not in props and qt_votos_raw is not None:
+        props["QT_VOTOS"] = qt_votos
 
     return {
         "tipo": safe_text(tipo),
