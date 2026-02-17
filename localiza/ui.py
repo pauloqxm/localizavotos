@@ -150,7 +150,14 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     municipios = sorted([m for m in df["Município"].dropna().astype(str).unique() if m.strip()]) if "Município" in df.columns else []
     bairros = sorted([b for b in df["Bairro/Distrito"].dropna().astype(str).unique() if b.strip()]) if "Bairro/Distrito" in df.columns else []
-    locais = sorted([l for l in df["local_votacao"].dropna().astype(str).unique() if l.strip()]) if "local_votacao" in df.columns else []
+    
+    # Usar NM_LOCAL_VOTACAO se existir, senão usar local_votacao
+    if "NM_LOCAL_VOTACAO" in df.columns:
+        locais = sorted([l for l in df["NM_LOCAL_VOTACAO"].dropna().astype(str).unique() if l.strip()])
+        local_col = "NM_LOCAL_VOTACAO"
+    else:
+        locais = sorted([l for l in df["local_votacao"].dropna().astype(str).unique() if l.strip()]) if "local_votacao" in df.columns else []
+        local_col = "local_votacao"
 
     with col2:
         mun = st.multiselect("Município", municipios, default=[])
@@ -165,7 +172,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     if bai and "Bairro/Distrito" in df_f.columns:
         df_f = df_f[df_f["Bairro/Distrito"].isin(bai)]
     if loc:
-        df_f = df_f[df_f["local_votacao"].isin(loc)]
+        df_f = df_f[df_f[local_col].isin(loc)]
 
     # KPIs
     c1, c2, c3, c4 = st.columns(4)
@@ -196,8 +203,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     else:
         # KPIs para locais de votação
         top_local = (
-            df_f.groupby("local_votacao")["qt_votos"].sum().sort_values(ascending=False).head(1)
-            if (not df_f.empty and "local_votacao" in df_f.columns) else pd.Series(dtype=float)
+            df_f.groupby(local_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
+            if (not df_f.empty and local_col in df_f.columns) else pd.Series(dtype=float)
         )
         top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
         top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
@@ -250,8 +257,15 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     cand_layers = discover_layers_geojson(candidate_folder, exclude=exclude)
 
     styles = load_layer_styles()
+    
+    # Verificar se Fortaleza está no filtro de municípios
+    fortaleza_ativo = not mun or "FORTALEZA" in [m.upper() for m in mun]
 
     for layer in common_layers + cand_layers:
+        # Pular camadas de Fortaleza se Fortaleza não estiver no filtro
+        if not fortaleza_ativo and ("fortaleza" in layer["stem"].lower() or "fortaleza" in layer["filename"].lower()):
+            continue
+            
         meta = {
             "stem": layer["stem"],
             "filename": layer["filename"],
@@ -261,7 +275,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         stl = resolve_layer_style(meta, styles)
         add_geojson_layer(m, layer["stem"], layer["geojson"], stl)
     
-    # Adicionar o arquivo de votos selecionado
+    # Adicionar o arquivo de votos selecionado (sempre mostrar)
     if votos_file and votos_file.exists():
         votos_gj = read_geojson(votos_file)
         if votos_gj:
