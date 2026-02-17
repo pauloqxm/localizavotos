@@ -197,8 +197,8 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                     "NR_ZONA": "📍 Zona"
                 }
             
-            # Coletar pontos para heatmap se for municipios
-            heat_pts = []
+            # Coletar pontos para visualização alternativa se for municipios
+            markers_data = []
             
             for feature in geojson.get("features", []):
                 geom = feature.get("geometry", {})
@@ -210,9 +210,13 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                         votos = _to_float(props.get(votos_col)) or 0
                         radius = _calculate_graduated_size(votos, min_votos, max_votos)
                         
-                        # Adicionar ao heatmap se for municipios
+                        # Coletar dados para marcadores com números se for municipios
                         if is_municipios and votos > 0:
-                            heat_pts.append([coords[1], coords[0], votos])
+                            markers_data.append({
+                                "coords": [coords[1], coords[0]],
+                                "votos": votos,
+                                "municipio": props.get("NM_MUNICIPIO", "")
+                            })
                         
                         # Criar tooltip customizado
                         tooltip_lines = []
@@ -235,9 +239,44 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             
             fg.add_to(m)
             
-            # Adicionar heatmap para votos_municipios
-            if is_municipios and heat_pts:
-                HeatMap(heat_pts, name=f"{name} - Mapa de Calor", show=True, min_opacity=0.4, radius=15, blur=20).add_to(m)
+            # Adicionar camada com números de votos para municipios
+            if is_municipios and markers_data:
+                fg_numbers = folium.FeatureGroup(name=f"{name} - Números", show=False)
+                
+                for data in markers_data:
+                    votos_int = int(data["votos"])
+                    # Determinar cor baseada na quantidade de votos
+                    if votos_int >= max_votos * 0.7:
+                        color = "#d32f2f"  # Vermelho escuro
+                    elif votos_int >= max_votos * 0.4:
+                        color = "#f57c00"  # Laranja
+                    else:
+                        color = "#1976d2"  # Azul
+                    
+                    icon_html = f"""
+                    <div style="
+                        background-color: {color};
+                        color: white;
+                        border: 2px solid white;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 11px;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                    ">{votos_int}</div>
+                    """
+                    
+                    folium.Marker(
+                        location=data["coords"],
+                        icon=folium.DivIcon(html=icon_html),
+                        tooltip=f"<b>{data['municipio']}</b><br>{votos_int} votos"
+                    ).add_to(fg_numbers)
+                
+                fg_numbers.add_to(m)
             
             return
     
