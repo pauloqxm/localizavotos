@@ -70,6 +70,15 @@ def hide_sidebar():
           .lv-kpi { display:flex; flex-direction:column; gap:4px; }
           .lv-kpi .v { font-size:20px; font-weight:800; }
           .lv-kpi .l { opacity:.85; font-size:12px; }
+          
+          /* Garantir que controles do mapa não sejam cortados */
+          iframe {
+            overflow: visible !important;
+          }
+          
+          [data-testid="stIFrame"] {
+            overflow: visible !important;
+          }
         </style>
         """,
         unsafe_allow_html=True,

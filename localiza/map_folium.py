@@ -428,14 +428,16 @@ def add_points_layer(
 def finalize_map(m: folium.Map):
     folium.LayerControl(position='topleft', collapsed=True).add_to(m)
     
-    # CSS para garantir visibilidade e responsividade de todos os controles
+    # CSS para garantir visibilidade dos controles em todas as telas
     css = """
     <style>
+    /* Forçar containers do lado direito a ficarem visíveis */
     .leaflet-top.leaflet-right,
     .leaflet-bottom.leaflet-right {
         position: absolute !important;
         right: 0 !important;
-        z-index: 1000 !important;
+        z-index: 9999 !important;
+        pointer-events: auto !important;
     }
     
     .leaflet-top.leaflet-right {
@@ -446,12 +448,17 @@ def finalize_map(m: folium.Map):
         bottom: 0 !important;
     }
     
+    /* Garantir que os controles sejam visíveis */
     .leaflet-draw,
     .leaflet-control-measure,
     .leaflet-control-mouseposition {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         margin: 10px !important;
     }
     
+    /* Responsivo */
     @media (max-width: 768px) {
         .leaflet-draw,
         .leaflet-control-measure,
