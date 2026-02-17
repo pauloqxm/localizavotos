@@ -22,8 +22,9 @@ ALIASES: dict[str, list[str]] = {
         "LOCALIDADE",
         "BAIRRO_DISTRITO",
         "Bairro/Distrito",
+        "NM_MUNICIPIO",
     ],
-    "municipio": ["municipio", "município", "Municipio", "Município", "MUNICIPIO", "Mun"],
+    "municipio": ["municipio", "município", "Municipio", "Município", "MUNICIPIO", "Mun", "NM_MUNICIPIO", "NM_MUN"],
     "distrito": [
         "distrito",
         "Distrito",
@@ -37,7 +38,7 @@ ALIASES: dict[str, list[str]] = {
     ],
     "endereco": ["Endereço", "Endereco", "endereco", "address", "logradouro", "LOGRADOURO"],
     "bairro": ["Bairro", "bairro", "Bairro/Distrito", "bairro/distrito", "BAIRRO", "Distrito", "distrito"],
-    "local_votacao": ["local_votacao", "local votação", "local", "local_de_votacao", "LOCAL_VOT"],
+    "local_votacao": ["local_votacao", "local votação", "local", "local_de_votacao", "LOCAL_VOT", "NM_LOCAL_VOTACAO"],
     "qt_votos": ["qt_votos", "qtvotos", "votos", "qtde_votos", "quantidade_votos", "QT_VOTOS"],
 }
 
@@ -150,9 +151,13 @@ def normalize_feature(ft: dict[str, Any], tipo: str | None = None, force_nome_fr
 
     lat, lon = get_latlon(props, geom)
     
-    # Preservar QT_VOTOS original nas properties se existir
-    if "QT_VOTOS" not in props and qt_votos_raw is not None:
+    # Garantir que QT_VOTOS esteja nas properties originais
+    if qt_votos > 0 and "QT_VOTOS" not in props:
         props["QT_VOTOS"] = qt_votos
+    
+    # Garantir que NM_MUNICIPIO esteja nas properties se municipio foi encontrado
+    if municipio and "NM_MUNICIPIO" not in props:
+        props["NM_MUNICIPIO"] = municipio
 
     return {
         "tipo": safe_text(tipo),
