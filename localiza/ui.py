@@ -235,48 +235,56 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         max_votos = int(df_f["qt_votos"].max())
         
         if min_votos < max_votos:
+            # Título fora do retângulo
+            st.markdown('<h4 style="margin: 0 0 10px 0; color: #667eea;">🎯 Filtrar por quantidade de votos</h4>', unsafe_allow_html=True)
+            
             # Container com estilo destacado
-            st.markdown("""
-                <div style="
-                    padding: 20px;
-                    border-radius: 10px;
-                    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-                    border: 2px solid #667eea;
-                    margin-bottom: 20px;
-                ">
-                    <h4 style="margin: 0 0 15px 0; color: #667eea;">🎯 Filtrar por quantidade de votos</h4>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            # Colunas para slider e inputs
-            col_slider, col_min, col_max = st.columns([6, 1, 1])
-            
-            with col_slider:
-                votos_range = st.slider(
-                    "Intervalo de votos",
-                    min_value=min_votos,
-                    max_value=max_votos,
-                    value=(min_votos, max_votos),
-                    label_visibility="collapsed"
-                )
-            
-            with col_min:
-                votos_min_input = st.number_input(
-                    "Mínimo",
-                    min_value=min_votos,
-                    max_value=max_votos,
-                    value=votos_range[0],
-                    step=1
-                )
-            
-            with col_max:
-                votos_max_input = st.number_input(
-                    "Máximo",
-                    min_value=min_votos,
-                    max_value=max_votos,
-                    value=votos_range[1],
-                    step=1
-                )
+            with st.container():
+                st.markdown("""
+                    <style>
+                    .filter-box {
+                        padding: 20px;
+                        border-radius: 10px;
+                        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+                        border: 2px solid #667eea;
+                        margin-bottom: 20px;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
+                
+                st.markdown('<div class="filter-box">', unsafe_allow_html=True)
+                
+                # Colunas para slider e inputs
+                col_slider, col_min, col_max = st.columns([6, 1, 1])
+                
+                with col_slider:
+                    votos_range = st.slider(
+                        "Intervalo de votos",
+                        min_value=min_votos,
+                        max_value=max_votos,
+                        value=(min_votos, max_votos),
+                        label_visibility="collapsed"
+                    )
+                
+                with col_min:
+                    votos_min_input = st.number_input(
+                        "Mínimo",
+                        min_value=min_votos,
+                        max_value=max_votos,
+                        value=votos_range[0],
+                        step=1
+                    )
+                
+                with col_max:
+                    votos_max_input = st.number_input(
+                        "Máximo",
+                        min_value=min_votos,
+                        max_value=max_votos,
+                        value=votos_range[1],
+                        step=1
+                    )
+                
+                st.markdown('</div>', unsafe_allow_html=True)
             
             # Usar valores dos inputs se forem diferentes do slider
             final_min = votos_min_input
