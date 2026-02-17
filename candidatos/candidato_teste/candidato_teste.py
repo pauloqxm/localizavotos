@@ -9,10 +9,8 @@ CANDIDATE_SUBTITLE = "Mapa de votos por local de votação"
 
 BASE_DIR = Path(__file__).resolve().parent
 
-VOTOS_FILES = [
-    BASE_DIR / "votos_municipios.geojson",
-    BASE_DIR / "votos_fortaleza.geojson",
-]
+# Descobrir automaticamente todos os arquivos que começam com votos_
+VOTOS_FILES = sorted([f for f in BASE_DIR.glob("votos_*.geojson") if f.is_file()])
 
 # opcional: arquivo de bounds (ex: regionais, bairros, etc.)
 BOUNDS_FILE = None  # BASE_DIR / "limites.geojson"
@@ -23,6 +21,6 @@ def render():
         candidate_folder=BASE_DIR,
         title=CANDIDATE_TITLE,
         subtitle=CANDIDATE_SUBTITLE,
-        votos_files=[p for p in VOTOS_FILES if p.exists()],
+        votos_files=VOTOS_FILES,
         bounds_file=BOUNDS_FILE if (BOUNDS_FILE and BOUNDS_FILE.exists()) else None,
     )

@@ -59,10 +59,8 @@ CANDIDATE_SUBTITLE = "{subtitle}"
 
 BASE_DIR = Path(__file__).resolve().parent
 
-VOTOS_FILES = [
-    BASE_DIR / "votos_municipios.geojson",
-    BASE_DIR / "votos_fortaleza.geojson",
-]
+# Descobrir automaticamente todos os arquivos que começam com votos_
+VOTOS_FILES = sorted([f for f in BASE_DIR.glob("votos_*.geojson") if f.is_file()])
 
 # opcional: arquivo de bounds (ex: regionais, bairros, etc.)
 BOUNDS_FILE = None  # BASE_DIR / "limites.geojson"
@@ -73,7 +71,7 @@ def render():
         candidate_folder=BASE_DIR,
         title=CANDIDATE_TITLE,
         subtitle=CANDIDATE_SUBTITLE,
-        votos_files=[p for p in VOTOS_FILES if p.exists()],
+        votos_files=VOTOS_FILES,
         bounds_file=BOUNDS_FILE if (BOUNDS_FILE and BOUNDS_FILE.exists()) else None,
     )
 '''
@@ -109,28 +107,28 @@ if __name__ == "__main__":
 
 ## Arquivos necessários
 
-Adicione os seguintes arquivos GeoJSON nesta pasta:
+Adicione arquivos GeoJSON nesta pasta seguindo a convenção:
 
-- `votos_fortaleza.geojson` - Votos por local de votação em Fortaleza
-- `votos_municipios.geojson` - Votos agregados por município (opcional)
+- Arquivos que começam com `votos_` serão automaticamente detectados como bases de votos
+- Exemplos: `votos_fortaleza.geojson`, `votos_municipios.geojson`, `votos_quixeramobim.geojson`
 
 ## Estrutura dos arquivos GeoJSON
 
-### votos_fortaleza.geojson
-Deve conter pontos com as seguintes propriedades:
+### Arquivos votos_*.geojson
+Devem conter pontos com as seguintes propriedades:
 - `NM_MUNICIPIO` - Nome do município
 - `NM_LOCAL_VOTACAO` - Nome do local de votação
 - `NM_VOTAVEL` - Nome do candidato
 - `NR_VOTAVEL` - Número do candidato
 - `QT_VOTOS` - Quantidade de votos
-- `NR_ZONA` - Número da zona eleitoral
+- `NR_ZONA` - Número da zona eleitoral (opcional)
 
-### votos_municipios.geojson
-Deve conter pontos com as seguintes propriedades:
+### Arquivos votos_*_municipios.geojson
+Para dados agregados por município:
 - `NM_MUNICIPIO` - Nome do município
 - `NM_VOTAVEL` - Nome do candidato
 - `NR_VOTAVEL` - Número do candidato
-- `TOTAL_VOTOS_MUNICIPIO` - Total de votos no município
+- `QT_VOTOS` - Total de votos no município
 
 ## URL de acesso
 
@@ -146,9 +144,9 @@ Após adicionar os arquivos, a página estará disponível em:
     print(f"📄 Arquivo Python: {candidate_py}")
     print(f"🌐 Página Streamlit: {page_file}")
     print(f"\n📋 Próximos passos:")
-    print(f"1. Adicione os arquivos GeoJSON em: {candidatos_dir}/")
-    print(f"   - votos_fortaleza.geojson")
-    print(f"   - votos_municipios.geojson (opcional)")
+    print(f"1. Adicione arquivos GeoJSON em: {candidatos_dir}/")
+    print(f"   - Qualquer arquivo começando com 'votos_' será detectado automaticamente")
+    print(f"   - Exemplos: votos_fortaleza.geojson, votos_municipios.geojson")
     print(f"2. Commit e push para o GitHub")
     print(f"3. Acesse: http://seu-dominio/{slug}")
 
