@@ -195,4 +195,4 @@ def add_points_layer(
 
 
 def finalize_map(m: folium.Map):
-    folium.LayerControl(collapsed=True).add_to(m)
+    folium.LayerControl(position='topright', collapsed=False).add_to(m)
