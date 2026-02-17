@@ -11,10 +11,10 @@ from .schema import circle_radius
 def add_base_tiles(m: folium.Map):
     tile_layers = [
         {"name": "Top Map", "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", "attr": "© OpenTopoMap"},
-        {"name": "OpenStreetMap", "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "attr": "© OpenStreetMap contributors"},
         {"name": "CartoDB Positron", "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", "attr": "© CARTO"},
         {"name": "CartoDB Dark", "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", "attr": "© CARTO"},
         {"name": "Esri World Imagery", "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", "attr": "Tiles © Esri"},
+        {"name": "OpenStreetMap", "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "attr": "© OpenStreetMap contributors"},
     ]
     for t in tile_layers:
         folium.TileLayer(tiles=t["url"], attr=t["attr"], name=t["name"], control=True).add_to(m)
