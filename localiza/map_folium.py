@@ -133,56 +133,59 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
             show=bool(style.get("show", True)),
         ).add_to(m)
+        return
     
-    # Adicionar ícones para locais_fortaleza
-    elif "locais_fortaleza" in name.lower():
-        fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
-        
-        for feature in geojson.get("features", []):
-            geom = feature.get("geometry", {})
-            props = feature.get("properties", {})
+    # Suporte para ícones customizados em pontos
+    if style.get("mode") == "icon" and geojson.get("features"):
+        first_geom = geojson["features"][0].get("geometry", {}).get("type")
+        if first_geom == "Point":
+            fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
             
-            if geom.get("type") == "Point":
-                coords = geom.get("coordinates", [])
-                if len(coords) >= 2:
-                    icon = folium.CustomIcon(
-                        "https://i.ibb.co/kgbmmjWc/location-icon-242304.png",
-                        icon_size=(25, 25)
-                    )
-                    
-                    tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
-                    
-                    folium.Marker(
-                        location=[coords[1], coords[0]],
-                        icon=icon,
-                        tooltip=folium.Tooltip(tooltip_text) if tooltip_text else None,
-                        popup=folium.Popup(tooltip_text, max_width=300) if tooltip_text else None,
-                    ).add_to(fg)
-        
-        fg.add_to(m)
+            for feature in geojson.get("features", []):
+                geom = feature.get("geometry", {})
+                props = feature.get("properties", {})
+                
+                if geom.get("type") == "Point":
+                    coords = geom.get("coordinates", [])
+                    if len(coords) >= 2:
+                        icon_url = style.get("iconUrl", style.get("iconPath"))
+                        icon_size = style.get("iconSize", 25)
+                        
+                        icon = folium.CustomIcon(icon_url, icon_size=(icon_size, icon_size))
+                        tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
+                        
+                        folium.Marker(
+                            location=[coords[1], coords[0]],
+                            icon=icon,
+                            tooltip=folium.Tooltip(tooltip_text) if tooltip_text else None,
+                            popup=folium.Popup(tooltip_text, max_width=300) if tooltip_text else None,
+                        ).add_to(fg)
+            
+            fg.add_to(m)
+            return
     
-    else:
-        def _style(_):
-            return {
-                "color": style.get("color", "#2b6cb0"),
-                "weight": style.get("weight", 2),
-                "opacity": style.get("opacity", 0.9),
-                "fillColor": style.get("fillColor", style.get("color", "#2b6cb0")),
-                "fillOpacity": style.get("fillOpacity", 0.15),
-            }
+    # Estilo padrão para polígonos e linhas
+    def _style(_):
+        return {
+            "color": style.get("color", "#2b6cb0"),
+            "weight": style.get("weight", 2),
+            "opacity": style.get("opacity", 0.9),
+            "fillColor": style.get("fillColor", style.get("color", "#2b6cb0")),
+            "fillOpacity": style.get("fillOpacity", 0.15),
+        }
 
-        tooltip_fields = []
-        if geojson.get("features"):
-            props = geojson["features"][0].get("properties", {})
-            tooltip_fields = [k for k in props.keys() if k and props[k]]
-        
-        folium.GeoJson(
-            geojson,
-            name=name,
-            style_function=_style,
-            tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
-            show=bool(style.get("show", True)),
-        ).add_to(m)
+    tooltip_fields = []
+    if geojson.get("features"):
+        props = geojson["features"][0].get("properties", {})
+        tooltip_fields = [k for k in props.keys() if k and props[k]]
+    
+    folium.GeoJson(
+        geojson,
+        name=name,
+        style_function=_style,
+        tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
+        show=bool(style.get("show", True)),
+    ).add_to(m)
 
 
 def add_points_layer(
