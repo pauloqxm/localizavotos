@@ -56,13 +56,13 @@ def safe_number(v: Any) -> float | None:
     """
     Converte valores numéricos aceitando:
     - Padrão internacional: 1234.56
-    - Padrão BR: 1.234,56 ou 1234,56
+    - Padrão BR: 1.234,56 ou 1234,56 ou 62,491
     Importante: NÃO remove ponto decimal de coordenadas como -3.7397117.
     """
     if v is None:
         return None
 
-    # Se já é número, não mexe. Era aqui que quebrava as coordenadas no fluxo anterior.
+    # Se já é número, não mexe
     if isinstance(v, (int, float)):
         try:
             return float(v)
@@ -78,18 +78,15 @@ def safe_number(v: Any) -> float | None:
     # Tem vírgula e ponto: decide qual é o decimal pelo último separador
     if "," in s and "." in s:
         if s.rfind(",") > s.rfind("."):
-            # vírgula é decimal, ponto é milhar
+            # vírgula é decimal, ponto é milhar (ex: 1.234,56)
             s = s.replace(".", "").replace(",", ".")
         else:
-            # ponto é decimal, vírgula é milhar
+            # ponto é decimal, vírgula é milhar (ex: 1,234.56)
             s = s.replace(",", "")
     elif "," in s:
-        # só vírgula: vírgula é decimal
-        s = s.replace(".", "")
+        # só vírgula: vírgula é decimal (ex: 62,491 ou 1234,56)
         s = s.replace(",", ".")
-    else:
-        # só ponto ou nenhum separador: mantém
-        pass
+    # Se só tem ponto ou nenhum separador: mantém como está
 
     try:
         return float(s)
