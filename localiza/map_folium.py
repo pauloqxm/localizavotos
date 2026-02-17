@@ -170,22 +170,32 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
         if first_geom == "Point":
             fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
             
-            # Detectar qual coluna de votos usar
+            # Detectar qual coluna de votos usar (case-insensitive)
             is_municipios = "municipios" in name.lower()
-            votos_col = "QT_VOTOS"
+            
+            # Tentar encontrar coluna de votos (maiúsculas ou minúsculas)
+            first_props = geojson["features"][0].get("properties", {})
+            votos_col = None
+            for key in first_props.keys():
+                if key.upper() == "QT_VOTOS":
+                    votos_col = key
+                    break
+            
+            if not votos_col:
+                votos_col = "QT_VOTOS"  # fallback
             
             # Calcular min/max para graduação
             votos_vals = [_to_float(f.get("properties", {}).get(votos_col)) or 0 for f in geojson["features"]]
             min_votos = min(votos_vals) if votos_vals else 0
             max_votos = max(votos_vals) if votos_vals else 0
             
-            # Mapeamento de campos com emojis
+            # Mapeamento de campos com emojis (case-insensitive)
             if is_municipios:
                 field_map = {
                     "NM_MUNICIPIO": "🏛️ Município",
                     "NM_VOTAVEL": "👤 Nome",
                     "NR_VOTAVEL": "🔢 N°",
-                    "QT_VOTOS": "🗳️ Total Votos",
+                    votos_col: "🗳️ Total Votos",
                 }
             else:
                 field_map = {
@@ -193,7 +203,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                     "NM_LOCAL_VOTACAO": "📍 Local de Votação",
                     "NM_VOTAVEL": "👤 Nome",
                     "NR_VOTAVEL": "🔢 N°",
-                    "QT_VOTOS": "🗳️ Quant. Votos",
+                    votos_col: "🗳️ Quant. Votos",
                     "NR_ZONA": "📍 Zona"
                 }
             

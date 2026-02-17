@@ -34,11 +34,8 @@ def load_votos_df(votos_file: Path) -> pd.DataFrame:
     else:
         df["Bairro/Distrito"] = df["bairro"]
 
-    # Usar sempre QT_VOTOS
-    if "QT_VOTOS" in df.columns:
-        df["qt_votos"] = pd.to_numeric(df["QT_VOTOS"], errors="coerce").fillna(0.0)
-    else:
-        df["qt_votos"] = pd.to_numeric(df["qt_votos"], errors="coerce").fillna(0.0)
+    # Usar sempre qt_votos (já normalizado pelo schema)
+    df["qt_votos"] = pd.to_numeric(df["qt_votos"], errors="coerce").fillna(0.0)
 
     df = df.dropna(subset=["lat", "lon"])
     return df
