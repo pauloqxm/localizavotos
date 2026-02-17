@@ -35,10 +35,20 @@ def hide_sidebar():
     st.markdown(
         """
         <style>
+          /* Ocultar sidebar e barra superior do Streamlit */
           [data-testid="stSidebar"] { display: none !important; }
           [data-testid="stSidebarNav"] { display: none !important; }
           [data-testid="collapsedControl"] { display: none !important; }
-          .block-container { padding-top: 1.2rem; }
+          header[data-testid="stHeader"] { display: none !important; }
+          #MainMenu { visibility: hidden !important; }
+          footer { visibility: hidden !important; }
+          
+          /* Ajustar padding do container principal */
+          .block-container { 
+            padding-top: 2rem; 
+            padding-bottom: 2rem;
+          }
+          
           .lv-header { 
             width: 100%;
             padding: 20px 32px;
