@@ -120,6 +120,47 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             region = feature.get("properties", {}).get("Região", "")
             color = region_colors.get(region, "#95a5a6")
             return {"color": color, "weight": 2, "opacity": 0.8, "fillColor": color, "fillOpacity": 0.3}
+        
+        tooltip_fields = []
+        if geojson.get("features"):
+            props = geojson["features"][0].get("properties", {})
+            tooltip_fields = [k for k in props.keys() if k and props[k]]
+        
+        folium.GeoJson(
+            geojson,
+            name=name,
+            style_function=_style,
+            tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
+            show=bool(style.get("show", True)),
+        ).add_to(m)
+    
+    # Adicionar ícones para locais_fortaleza
+    elif "locais_fortaleza" in name.lower():
+        fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
+        
+        for feature in geojson.get("features", []):
+            geom = feature.get("geometry", {})
+            props = feature.get("properties", {})
+            
+            if geom.get("type") == "Point":
+                coords = geom.get("coordinates", [])
+                if len(coords) >= 2:
+                    icon = folium.CustomIcon(
+                        "https://i.ibb.co/kgbmmjWc/location-icon-242304.png",
+                        icon_size=(25, 25)
+                    )
+                    
+                    tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
+                    
+                    folium.Marker(
+                        location=[coords[1], coords[0]],
+                        icon=icon,
+                        tooltip=folium.Tooltip(tooltip_text) if tooltip_text else None,
+                        popup=folium.Popup(tooltip_text, max_width=300) if tooltip_text else None,
+                    ).add_to(fg)
+        
+        fg.add_to(m)
+    
     else:
         def _style(_):
             return {
@@ -130,18 +171,18 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                 "fillOpacity": style.get("fillOpacity", 0.15),
             }
 
-    tooltip_fields = []
-    if geojson.get("features"):
-        props = geojson["features"][0].get("properties", {})
-        tooltip_fields = [k for k in props.keys() if k and props[k]]
-    
-    folium.GeoJson(
-        geojson,
-        name=name,
-        style_function=_style,
-        tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
-        show=bool(style.get("show", True)),
-    ).add_to(m)
+        tooltip_fields = []
+        if geojson.get("features"):
+            props = geojson["features"][0].get("properties", {})
+            tooltip_fields = [k for k in props.keys() if k and props[k]]
+        
+        folium.GeoJson(
+            geojson,
+            name=name,
+            style_function=_style,
+            tooltip=folium.GeoJsonTooltip(fields=tooltip_fields[:5]) if tooltip_fields else folium.Tooltip(name),
+            show=bool(style.get("show", True)),
+        ).add_to(m)
 
 
 def add_points_layer(
