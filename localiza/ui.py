@@ -210,12 +210,39 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     # ---- Mapa
     st.subheader("🗺️ Mapa")
 
-    bounds_gj = read_geojson(bounds_file) if bounds_file else {}
-    bounds, center = bounds_center_from_geojson(bounds_gj) if bounds_gj else (None, None)
+    # Se for municípios, usar bounds do ce_regioes
+    if is_municipios:
+        # Procurar ce_regioes nas camadas comuns
+        common_data_dir = Path(st.session_state.get("COMMON_DATA_DIR", "data"))
+        ce_regioes_file = common_data_dir / "ce_regioes.geojson"
+        
+        if ce_regioes_file.exists():
+            ce_regioes_gj = read_geojson(ce_regioes_file)
+            if ce_regioes_gj:
+                bounds, center = bounds_center_from_geojson(ce_regioes_gj)
+                zoom_start = 7  # Zoom mais afastado para ver todo o estado
+            else:
+                bounds_gj = read_geojson(bounds_file) if bounds_file else {}
+                bounds, center = bounds_center_from_geojson(bounds_gj) if bounds_gj else (None, None)
+                zoom_start = 11
+        else:
+            bounds_gj = read_geojson(bounds_file) if bounds_file else {}
+            bounds, center = bounds_center_from_geojson(bounds_gj) if bounds_gj else (None, None)
+            zoom_start = 11
+    else:
+        bounds_gj = read_geojson(bounds_file) if bounds_file else {}
+        bounds, center = bounds_center_from_geojson(bounds_gj) if bounds_gj else (None, None)
+        zoom_start = 11
+    
     if center is None:
         center = [float(df_f["lat"].mean()), float(df_f["lon"].mean())]
+        zoom_start = 11
 
-    m = build_map(center=center, zoom_start=11)
+    m = build_map(center=center, zoom_start=zoom_start)
+    
+    # Ajustar bounds do mapa se for municípios e tiver bounds
+    if is_municipios and bounds:
+        m.fit_bounds(bounds)
 
     # camadas comuns e do candidato
     exclude = {votos_file.name} if votos_file else set()
