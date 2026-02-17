@@ -447,6 +447,23 @@ def finalize_map(m: folium.Map):
         z-index: 1000 !important;
         margin-top: 10px !important;
         margin-right: 10px !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Container do lado direito */
+    .leaflet-top.leaflet-right {
+        right: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        pointer-events: auto !important;
+    }
+    
+    .leaflet-bottom.leaflet-right {
+        right: 0 !important;
+        display: block !important;
+        pointer-events: auto !important;
     }
     
     /* Responsividade para telas pequenas */
@@ -462,15 +479,10 @@ def finalize_map(m: folium.Map):
             margin-left: 5px !important;
             margin-top: 5px !important;
         }
-    }
-    
-    /* Forçar exibição dos controles */
-    .leaflet-top.leaflet-right,
-    .leaflet-top.leaflet-left,
-    .leaflet-bottom.leaflet-right {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        
+        .leaflet-top.leaflet-right {
+            right: 0 !important;
+        }
     }
     </style>
     """
