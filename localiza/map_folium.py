@@ -24,26 +24,30 @@ def build_map(center: list[float], zoom_start: int = 11) -> folium.Map:
     m = folium.Map(location=center, zoom_start=zoom_start, tiles=None, control_scale=True)
     add_base_tiles(m)
 
+    # Fullscreen no lado esquerdo
     Fullscreen(
-        position="topright",
+        position="topleft",
         force_separate_button=True,
         title="Tela Cheia",
         title_cancel="Sair da Tela Cheia",
     ).add_to(m)
 
+    # MeasureControl no lado direito
     MeasureControl(
-        position="topleft",
+        position="topright",
         primary_length_unit="meters",
         secondary_length_unit="kilometers",
         primary_area_unit="hectares",
         secondary_area_unit="sqmeters",
     ).add_to(m)
 
-    MousePosition().add_to(m)
+    # MousePosition no lado direito
+    MousePosition(position="bottomright").add_to(m)
 
+    # Draw no lado direito, sem export
     Draw(
-        export=True,
-        position="topleft",
+        export=False,
+        position="topright",
         draw_options={
             "polyline": True,
             "polygon": {"allowIntersection": False, "showArea": True},
