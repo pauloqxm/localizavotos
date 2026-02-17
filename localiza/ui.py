@@ -171,7 +171,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     c1, c2, c3, c4 = st.columns(4)
     
     # Detectar se é arquivo de municípios
-    is_municipios = "TOTAL_VOTOS_MUNICIPIO" in df_f.columns or "municipios" in (votos_file.stem.lower() if votos_file else "")
+    is_municipios = "municipios" in (votos_file.stem.lower() if votos_file else "")
     
     total_votos = int(df_f["qt_votos"].sum()) if not df_f.empty else 0
     total_pontos = int(len(df_f))

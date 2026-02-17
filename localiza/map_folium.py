@@ -172,7 +172,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
             
             # Detectar qual coluna de votos usar
             is_municipios = "municipios" in name.lower()
-            votos_col = "TOTAL_VOTOS_MUNICIPIO" if is_municipios else "QT_VOTOS"
+            votos_col = "QT_VOTOS"
             
             # Calcular min/max para graduação
             votos_vals = [_to_float(f.get("properties", {}).get(votos_col)) or 0 for f in geojson["features"]]
@@ -185,7 +185,7 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                     "NM_MUNICIPIO": "🏛️ Município",
                     "NM_VOTAVEL": "👤 Nome",
                     "NR_VOTAVEL": "🔢 N°",
-                    "TOTAL_VOTOS_MUNICIPIO": "🗳️ Total Votos",
+                    "QT_VOTOS": "🗳️ Total Votos",
                 }
             else:
                 field_map = {
