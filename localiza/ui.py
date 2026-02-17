@@ -273,13 +273,30 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     styles = load_layer_styles()
     
-    # Verificar se a base de votos selecionada é de Fortaleza
-    fortaleza_ativo = votos_file and "fortaleza" in votos_file.stem.lower()
+    # Extrair identificador da base de votos (ex: votos_fortaleza -> fortaleza, votos_quixeramobim -> quixeramobim)
+    base_identifier = ""
+    if votos_file:
+        stem = votos_file.stem.lower()
+        if stem.startswith("votos_"):
+            base_identifier = stem.replace("votos_", "").replace("_municipios", "")
 
     for layer in common_layers + cand_layers:
-        # Pular camadas de Fortaleza se Fortaleza não estiver no filtro
-        if not fortaleza_ativo and ("fortaleza" in layer["stem"].lower() or "fortaleza" in layer["filename"].lower()):
-            continue
+        layer_name = layer["stem"].lower()
+        layer_filename = layer["filename"].lower()
+        
+        # Pular camadas que não correspondem à base de votos selecionada
+        # Exceção: camadas que não começam com padrões conhecidos (locais_, distritos_, etc) sempre aparecem
+        if base_identifier:
+            # Lista de prefixos que devem ser filtrados por base
+            prefixes = ["locais_", "distritos_", "bairros_", "zonas_"]
+            
+            # Verificar se a camada tem algum prefixo conhecido
+            has_prefix = any(layer_name.startswith(p) for p in prefixes)
+            
+            if has_prefix:
+                # Se tem prefixo, só mostra se corresponder à base selecionada
+                if base_identifier not in layer_name and base_identifier not in layer_filename:
+                    continue
             
         meta = {
             "stem": layer["stem"],
