@@ -176,6 +176,10 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     total_votos = int(df_f["qt_votos"].sum()) if not df_f.empty else 0
     total_pontos = int(len(df_f))
     
+    # Formatar números sem vírgula (usar ponto como separador de milhar)
+    def format_number(n):
+        return f"{n:,}".replace(",", ".")
+    
     if is_municipios:
         # KPIs para municípios
         top_mun = (
@@ -185,9 +189,9 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         top_mun_name = (top_mun.index[0] if len(top_mun) else "Sem dados")
         top_mun_v = int(top_mun.iloc[0]) if len(top_mun) else 0
         
-        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_votos:,}</div><div class='l'>Total de votos</div></div>", unsafe_allow_html=True)
-        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_pontos:,}</div><div class='l'>Municípios</div></div>", unsafe_allow_html=True)
-        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_v:,}</div><div class='l'>Maior votação</div></div>", unsafe_allow_html=True)
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Total de votos</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Municípios</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_mun_v)}</div><div class='l'>Maior votação</div></div>", unsafe_allow_html=True)
         c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_name}</div><div class='l'>Município destaque</div></div>", unsafe_allow_html=True)
     else:
         # KPIs para locais de votação
@@ -198,9 +202,9 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
         top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
         
-        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_votos:,}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
-        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{total_pontos:,}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
-        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_v:,}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_local_v)}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
         c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
 
     # ---- Mapa
@@ -267,9 +271,13 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     df_sel = df_f
     if st.session_state.get("selection_geojson"):
         df_sel = filter_points_within_polygon(df_f, st.session_state["selection_geojson"])
+        
+        # Formatar números sem vírgula
+        total_sel = int(df_sel["qt_votos"].sum())
+        pontos_sel = len(df_sel)
 
         st.markdown(
-            f"<div class='lv-card'><b>Seleção por polígono</b><br/>Total de votos na área. <b>{int(df_sel['qt_votos'].sum()):,}</b><br/>Pontos dentro. <b>{len(df_sel):,}</b></div>",
+            f"<div class='lv-card'><b>Seleção por polígono</b><br/>Total de votos na área: <b>{total_sel:,}".replace(",", ".") + f"</b><br/>Pontos dentro: <b>{pontos_sel:,}".replace(",", ".") + "</b></div>",
             unsafe_allow_html=True,
         )
 
