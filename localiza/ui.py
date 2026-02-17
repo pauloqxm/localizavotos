@@ -281,18 +281,43 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         stl = resolve_layer_style(meta, styles)
         add_geojson_layer(m, layer["stem"], layer["geojson"], stl)
     
-    # Adicionar o arquivo de votos selecionado (sempre mostrar)
+    # Adicionar o arquivo de votos selecionado (filtrado)
     if votos_file and votos_file.exists():
         votos_gj = read_geojson(votos_file)
         if votos_gj:
-            meta = {
-                "stem": votos_file.stem,
-                "filename": votos_file.name,
-                "geom": "Point",
-                "type": votos_file.stem,
-            }
-            stl = resolve_layer_style(meta, styles)
-            add_geojson_layer(m, votos_file.stem, votos_gj, stl)
+            # Filtrar features do GeoJSON baseado no df_f
+            if not df_f.empty:
+                # Criar conjunto de coordenadas filtradas para comparação rápida
+                filtered_coords = set(zip(df_f["lat"].round(6), df_f["lon"].round(6)))
+                
+                # Filtrar features
+                filtered_features = []
+                for feature in votos_gj.get("features", []):
+                    geom = feature.get("geometry", {})
+                    if geom.get("type") == "Point":
+                        coords = geom.get("coordinates", [])
+                        if len(coords) >= 2:
+                            # Coordenadas em GeoJSON são [lon, lat]
+                            lat_rounded = round(coords[1], 6)
+                            lon_rounded = round(coords[0], 6)
+                            if (lat_rounded, lon_rounded) in filtered_coords:
+                                filtered_features.append(feature)
+                
+                # Criar novo GeoJSON com features filtradas
+                if filtered_features:
+                    votos_gj_filtered = {
+                        "type": "FeatureCollection",
+                        "features": filtered_features
+                    }
+                    
+                    meta = {
+                        "stem": votos_file.stem,
+                        "filename": votos_file.name,
+                        "geom": "Point",
+                        "type": votos_file.stem,
+                    }
+                    stl = resolve_layer_style(meta, styles)
+                    add_geojson_layer(m, votos_file.stem, votos_gj_filtered, stl)
 
     finalize_map(m)
 
@@ -378,8 +403,10 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     st.subheader("📄 Tabela")
     if is_municipios:
-        cols_show = ["Município", "qt_votos", "lat", "lon"]
+        # Usar coluna original se existir
+        cols_show = [mun_col, "qt_votos", "lat", "lon"]
     else:
-        cols_show = ["local_votacao", "Município", "Bairro/Distrito", "Endereço", "qt_votos", "lat", "lon"]
+        # Usar colunas originais se existirem
+        cols_show = [local_col, mun_col, "Bairro/Distrito", "Endereço", "qt_votos", "lat", "lon"]
     cols_show = [c for c in cols_show if c in base_df.columns]
     st.dataframe(base_df[cols_show].sort_values("qt_votos", ascending=False), use_container_width=True)
