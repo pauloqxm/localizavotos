@@ -54,6 +54,8 @@ def resolve_layer_style(layer_meta: dict[str, Any], styles: dict[str, Any]) -> d
 
     # por nome da camada (stem)
     per = layers_cfg.get(stem) or layers_cfg.get(stem.lower()) or {}
-    base = merge_dict(base, per)
+    # mescla a configuração específica do tipo de geometria
+    per_kind = per.get(kind) or {}
+    base = merge_dict(base, per_kind)
 
     return base
