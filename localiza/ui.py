@@ -31,18 +31,40 @@ class CandidateSpec:
     base_bounds_file: Path | None = None
 
 def hide_sidebar():
-    st.set_page_config(page_title=APP_NAME, layout="wide")
+    st.set_page_config(page_title=APP_NAME, layout="wide", initial_sidebar_state="collapsed")
     st.markdown(
         """
         <style>
-          [data-testid="stSidebar"] { display: none; }
+          [data-testid="stSidebar"][aria-expanded="true"] { display: none; }
           [data-testid="stSidebarNav"] { display: none; }
           .block-container { padding-top: 1.2rem; }
-          .lv-header { display:flex; gap:14px; align-items:center; padding:14px 16px; border-radius:14px;
-                       background: linear-gradient(135deg, rgba(31,111,235,.22), rgba(15,27,48,.8));
-                       border:1px solid rgba(255,255,255,.06); margin-bottom:12px; }
-          .lv-title { font-size:22px; font-weight:800; margin:0; line-height:1.2; }
-          .lv-sub { opacity:.9; margin-top:2px; }
+          .lv-header { 
+            display: inline-block;
+            padding: 16px 32px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .lv-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+          }
+          .lv-title { 
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+          .lv-sub { 
+            opacity: 0.95;
+            margin-top: 4px;
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+          }
           .lv-card { padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.06);
                      background: rgba(15,27,48,.55); }
           .lv-kpi { display:flex; flex-direction:column; gap:4px; }
