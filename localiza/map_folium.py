@@ -106,16 +106,30 @@ def _fix_latlon(lat, lon) -> Tuple[float, float] | None:
 
 
 def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: dict[str, Any]):
-    def _style(_):
-        return {
-            "color": style.get("color", "#2b6cb0"),
-            "weight": style.get("weight", 2),
-            "opacity": style.get("opacity", 0.9),
-            "fillColor": style.get("fillColor", style.get("color", "#2b6cb0")),
-            "fillOpacity": style.get("fillOpacity", 0.15),
+    # Colorir por região se for ce_regioes
+    if "ce_regioes" in name.lower() or "regioes" in name.lower():
+        region_colors = {
+            "Centro-Sul": "#e74c3c", "Grande Fortaleza": "#3498db", "Litoral Leste": "#2ecc71",
+            "Litoral Norte": "#f39c12", "Litoral Oeste": "#9b59b6", "Maciço de Baturité": "#1abc9c",
+            "Serra da Ibiapaba": "#e67e22", "Sertão Central": "#34495e", "Sertão de Canindé": "#16a085",
+            "Sertão de Cratéus": "#c0392b", "Sertão de Inhamuns": "#8e44ad", "Sertão de Senador Pompeu": "#d35400",
+            "Sertão dos Inhamuns": "#27ae60", "Vale do Jaguaribe": "#2980b9",
         }
+        
+        def _style(feature):
+            region = feature.get("properties", {}).get("Região", "")
+            color = region_colors.get(region, "#95a5a6")
+            return {"color": color, "weight": 2, "opacity": 0.8, "fillColor": color, "fillOpacity": 0.3}
+    else:
+        def _style(_):
+            return {
+                "color": style.get("color", "#2b6cb0"),
+                "weight": style.get("weight", 2),
+                "opacity": style.get("opacity", 0.9),
+                "fillColor": style.get("fillColor", style.get("color", "#2b6cb0")),
+                "fillOpacity": style.get("fillOpacity", 0.15),
+            }
 
-    # Detecta campos disponíveis para tooltip
     tooltip_fields = []
     if geojson.get("features"):
         props = geojson["features"][0].get("properties", {})
