@@ -196,3 +196,20 @@ def add_points_layer(
 
 def finalize_map(m: folium.Map):
     folium.LayerControl(position='topright', collapsed=False).add_to(m)
+    
+    # CSS para garantir visibilidade do LayerControl em todas as telas
+    css = """
+    <style>
+    .leaflet-control-layers {
+        z-index: 1000 !important;
+        margin-top: 60px !important;
+    }
+    @media (max-width: 768px) {
+        .leaflet-control-layers {
+            margin-top: 10px !important;
+            margin-right: 10px !important;
+        }
+    }
+    </style>
+    """
+    m.get_root().html.add_child(folium.Element(css))
