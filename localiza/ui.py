@@ -199,47 +199,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     if loc:
         df_f = df_f[df_f[local_col].isin(loc)]
 
-    # KPIs
-    c1, c2, c3, c4 = st.columns(4)
-    
-    # Detectar se é arquivo de municípios
-    is_municipios = "municipios" in (votos_file.stem.lower() if votos_file else "")
-    
-    total_votos = int(df_f["qt_votos"].sum()) if not df_f.empty else 0
-    total_pontos = int(len(df_f))
-    
-    # Formatar números sem vírgula (usar ponto como separador de milhar)
-    def format_number(n):
-        return f"{n:,}".replace(",", ".")
-    
-    if is_municipios:
-        # KPIs para municípios
-        top_mun = (
-            df_f.groupby(mun_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
-            if not df_f.empty else pd.Series(dtype=float)
-        )
-        top_mun_name = (top_mun.index[0] if len(top_mun) else "Sem dados")
-        top_mun_v = int(top_mun.iloc[0]) if len(top_mun) else 0
-        
-        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Total de votos</div></div>", unsafe_allow_html=True)
-        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Municípios</div></div>", unsafe_allow_html=True)
-        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_mun_v)}</div><div class='l'>Maior votação</div></div>", unsafe_allow_html=True)
-        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_name}</div><div class='l'>Município destaque</div></div>", unsafe_allow_html=True)
-    else:
-        # KPIs para locais de votação
-        top_local = (
-            df_f.groupby(local_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
-            if (not df_f.empty and local_col in df_f.columns) else pd.Series(dtype=float)
-        )
-        top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
-        top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
-        
-        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
-        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
-        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_local_v)}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
-        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
-
-    # ---- Slider de filtro por quantidade de votos
+    # ---- Slider de filtro por quantidade de votos (ANTES dos KPIs)
     if not df_f.empty and "qt_votos" in df_f.columns:
         min_votos = int(df_f["qt_votos"].min())
         max_votos = int(df_f["qt_votos"].max())
@@ -297,6 +257,46 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
             
             # Aplicar filtro de intervalo
             df_f = df_f[(df_f["qt_votos"] >= final_min) & (df_f["qt_votos"] <= final_max)]
+
+    # KPIs (DEPOIS do filtro de quantidade de votos)
+    c1, c2, c3, c4 = st.columns(4)
+    
+    # Detectar se é arquivo de municípios
+    is_municipios = "municipios" in (votos_file.stem.lower() if votos_file else "")
+    
+    total_votos = int(df_f["qt_votos"].sum()) if not df_f.empty else 0
+    total_pontos = int(len(df_f))
+    
+    # Formatar números sem vírgula (usar ponto como separador de milhar)
+    def format_number(n):
+        return f"{n:,}".replace(",", ".")
+    
+    if is_municipios:
+        # KPIs para municípios
+        top_mun = (
+            df_f.groupby(mun_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
+            if not df_f.empty else pd.Series(dtype=float)
+        )
+        top_mun_name = (top_mun.index[0] if len(top_mun) else "Sem dados")
+        top_mun_v = int(top_mun.iloc[0]) if len(top_mun) else 0
+        
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Total de votos</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Municípios</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_mun_v)}</div><div class='l'>Maior votação</div></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_mun_name}</div><div class='l'>Município destaque</div></div>", unsafe_allow_html=True)
+    else:
+        # KPIs para locais de votação
+        top_local = (
+            df_f.groupby(local_col)["qt_votos"].sum().sort_values(ascending=False).head(1)
+            if (not df_f.empty and local_col in df_f.columns) else pd.Series(dtype=float)
+        )
+        top_local_name = (top_local.index[0] if len(top_local) else "Sem dados")
+        top_local_v = int(top_local.iloc[0]) if len(top_local) else 0
+        
+        c1.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_votos)}</div><div class='l'>Votos no filtro</div></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(total_pontos)}</div><div class='l'>Pontos mapeados</div></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{format_number(top_local_v)}</div><div class='l'>Top local</div></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='lv-card lv-kpi'><div class='v'>{top_local_name}</div><div class='l'>Onde apertar</div></div>", unsafe_allow_html=True)
 
     # ---- Mapa
     st.subheader("🗺️ Mapa")
