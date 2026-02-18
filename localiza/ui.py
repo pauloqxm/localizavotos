@@ -143,25 +143,25 @@ def header(title: str, subtitle: str):
           }}
         </style>
         <script>
-          // Detectar quando a página termina de carregar
-          window.addEventListener('load', function() {{
-            setTimeout(function() {{
-              const spinner = document.getElementById('spinnerCircle');
-              if (spinner) {{
+          // Detectar quando o Streamlit termina de renderizar
+          function checkLoaded() {{
+            const spinner = document.getElementById('spinnerCircle');
+            if (spinner && !spinner.classList.contains('loaded')) {{
+              // Verificar se há iframes (mapa) carregados
+              const iframes = document.querySelectorAll('iframe');
+              const hasMap = iframes.length > 0;
+              
+              if (hasMap) {{
                 spinner.classList.add('loaded');
+              }} else {{
+                // Tentar novamente em 500ms
+                setTimeout(checkLoaded, 500);
               }}
-            }}, 1000);
-          }});
+            }}
+          }}
           
-          // Também detectar quando o Streamlit termina de renderizar
-          document.addEventListener('DOMContentLoaded', function() {{
-            setTimeout(function() {{
-              const spinner = document.getElementById('spinnerCircle');
-              if (spinner) {{
-                spinner.classList.add('loaded');
-              }}
-            }}, 2000);
-          }});
+          // Iniciar verificação após um pequeno delay
+          setTimeout(checkLoaded, 1000);
         </script>
         """,
         unsafe_allow_html=True,
