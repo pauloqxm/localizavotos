@@ -354,7 +354,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         # Exceção: camadas que não começam com padrões conhecidos (locais_, distritos_, etc) sempre aparecem
         if base_identifier:
             # Lista de prefixos que devem ser filtrados por base
-            prefixes = ["votos_", "locais_", "distritos_", "bairros_", "zonas_"]
+            prefixes = ["votos_", "locais_", "distritos_", "bairros_", "zonas_", "lider_"]
             
             # Verificar se a camada tem algum prefixo conhecido
             has_prefix = any(layer_name.startswith(p) for p in prefixes)
