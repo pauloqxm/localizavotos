@@ -187,8 +187,9 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     with col3:
         loc = st.multiselect("Buscar Local de Votação", locais, default=[], placeholder="Selecione")
     with col4:
-        # Coluna vazia para manter layout
-        st.empty()
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔄 Limpar Filtros", use_container_width=True):
+            st.rerun()
 
     df_f = df.copy()
     if mun:
