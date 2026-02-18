@@ -142,24 +142,32 @@ def header(title: str, subtitle: str):
             100% {{ transform: rotate(360deg); }}
           }}
         </style>
-        <script>
-          (function() {{
-            function checkLoaded() {{
-              const spinner = document.getElementById('spinnerCircle');
-              if (spinner && !spinner.classList.contains('loaded')) {{
-                const iframes = document.querySelectorAll('iframe');
-                if (iframes.length > 0) {{
-                  spinner.classList.add('loaded');
-                }} else {{
-                  setTimeout(checkLoaded, 500);
-                }}
-              }}
-            }}
-            setTimeout(checkLoaded, 1000);
-          }})();
-        </script>
         """,
         unsafe_allow_html=True,
+    )
+    
+    # JavaScript separado usando components.html
+    import streamlit.components.v1 as components
+    components.html(
+        """
+        <script>
+          (function() {
+            function checkLoaded() {
+              const spinner = parent.document.getElementById('spinnerCircle');
+              if (spinner && !spinner.classList.contains('loaded')) {
+                const iframes = parent.document.querySelectorAll('iframe');
+                if (iframes.length > 2) {
+                  spinner.classList.add('loaded');
+                } else {
+                  setTimeout(checkLoaded, 500);
+                }
+              }
+            }
+            setTimeout(checkLoaded, 1000);
+          })();
+        </script>
+        """,
+        height=0,
     )
 
 def discover_candidates(candidatos_dir: Path = CANDIDATOS_DIR) -> list[Path]:
