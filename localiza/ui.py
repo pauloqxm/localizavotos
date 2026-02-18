@@ -189,10 +189,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     with col4:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Limpar Filtros", use_container_width=True):
-            # Limpar estado do slider
-            for key in list(st.session_state.keys()):
-                if key.startswith("votos_"):
-                    del st.session_state[key]
             st.rerun()
 
     df_f = df.copy()
@@ -223,12 +219,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                 </style>
             """, unsafe_allow_html=True)
             
-            # Inicializar valores no session_state se não existirem
-            if "votos_min" not in st.session_state:
-                st.session_state.votos_min = min_votos
-            if "votos_max" not in st.session_state:
-                st.session_state.votos_max = max_votos
-            
             # Colunas para slider e inputs dentro de um container
             col_slider, col_min, col_max = st.columns([6, 1, 1])
             
@@ -237,42 +227,34 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                     "Intervalo de votos",
                     min_value=min_votos,
                     max_value=max_votos,
-                    value=(st.session_state.votos_min, st.session_state.votos_max),
-                    label_visibility="collapsed",
-                    key="votos_slider"
+                    value=(min_votos, max_votos),
+                    label_visibility="collapsed"
                 )
-                # Atualizar session_state com valor do slider
-                st.session_state.votos_min = votos_range[0]
-                st.session_state.votos_max = votos_range[1]
             
             with col_min:
                 votos_min_input = st.number_input(
                     "Mínimo",
                     min_value=min_votos,
                     max_value=max_votos,
-                    value=st.session_state.votos_min,
-                    step=1,
-                    key="votos_min_input"
+                    value=votos_range[0],
+                    step=1
                 )
-                if votos_min_input != st.session_state.votos_min:
-                    st.session_state.votos_min = votos_min_input
-                    st.rerun()
             
             with col_max:
                 votos_max_input = st.number_input(
                     "Máximo",
                     min_value=min_votos,
                     max_value=max_votos,
-                    value=st.session_state.votos_max,
-                    step=1,
-                    key="votos_max_input"
+                    value=votos_range[1],
+                    step=1
                 )
-                if votos_max_input != st.session_state.votos_max:
-                    st.session_state.votos_max = votos_max_input
-                    st.rerun()
+            
+            # Usar valores dos inputs
+            final_min = votos_min_input
+            final_max = votos_max_input
             
             # Aplicar filtro de intervalo
-            df_f = df_f[(df_f["qt_votos"] >= st.session_state.votos_min) & (df_f["qt_votos"] <= st.session_state.votos_max)]
+            df_f = df_f[(df_f["qt_votos"] >= final_min) & (df_f["qt_votos"] <= final_max)]
 
     # KPIs (DEPOIS do filtro de quantidade de votos)
     c1, c2, c3, c4 = st.columns(4)
