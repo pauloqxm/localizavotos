@@ -504,27 +504,35 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
 
     st.subheader("📄 Tabela")
     
-    # Preparar colunas para exibição (sem coordenadas)
+    # Preparar colunas para exibição (sem coordenadas, bairro e endereço)
     if is_municipios:
         cols_show = [mun_col, "qt_votos"]
     else:
-        cols_show = [local_col, mun_col, "Bairro/Distrito", "Endereço", "qt_votos"]
+        cols_show = [local_col, mun_col, "qt_votos"]
     cols_show = [c for c in cols_show if c in base_df.columns]
     
-    # Criar DataFrame para exibição
-    df_display = base_df[cols_show].sort_values("qt_votos", ascending=False)
+    # Criar DataFrame para exibição e renomear colunas
+    df_display = base_df[cols_show].sort_values("qt_votos", ascending=False).copy()
     
-    # Botão de download estilizado
-    col_btn, col_space = st.columns([1, 5])
-    with col_btn:
-        csv = df_display.to_csv(index=False, encoding='utf-8-sig')
-        st.download_button(
-            label="📥 Baixar CSV",
-            data=csv,
-            file_name=f"localizavotos_{votos_file.stem if votos_file else 'dados'}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+    # Renomear colunas para rótulos amigáveis
+    rename_map = {
+        "NM_LOCAL_VOTACAO": "Local de Votação",
+        "local_votacao": "Local de Votação",
+        "NM_MUNICIPIO": "Município",
+        "Município": "Município",
+        "qt_votos": "Votos"
+    }
+    df_display = df_display.rename(columns=rename_map)
     
     # Exibir tabela
     st.dataframe(df_display, use_container_width=True)
+    
+    # Botão de download responsivo embaixo
+    csv = df_display.to_csv(index=False, encoding='utf-8-sig')
+    st.download_button(
+        label="📥 Baixar CSV",
+        data=csv,
+        file_name=f"localizavotos_{votos_file.stem if votos_file else 'dados'}.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
