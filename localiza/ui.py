@@ -189,6 +189,10 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     with col4:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Limpar Filtros", use_container_width=True):
+            # Limpar estado do slider
+            for key in list(st.session_state.keys()):
+                if key.startswith("votos_"):
+                    del st.session_state[key]
             st.rerun()
 
     df_f = df.copy()
@@ -228,7 +232,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                     min_value=min_votos,
                     max_value=max_votos,
                     value=(min_votos, max_votos),
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    key="votos_slider"
                 )
             
             with col_min:
@@ -237,7 +242,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                     min_value=min_votos,
                     max_value=max_votos,
                     value=votos_range[0],
-                    step=1
+                    step=1,
+                    key="votos_min"
                 )
             
             with col_max:
@@ -246,7 +252,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                     min_value=min_votos,
                     max_value=max_votos,
                     value=votos_range[1],
-                    step=1
+                    step=1,
+                    key="votos_max"
                 )
             
             # Usar valores dos inputs
