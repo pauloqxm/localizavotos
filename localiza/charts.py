@@ -236,5 +236,4 @@ def chart_dispersao_geografica(df: pd.DataFrame):
             ]
         )
         .properties(height=400)
-        .interactive()
     )
