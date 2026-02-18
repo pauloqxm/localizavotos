@@ -220,40 +220,28 @@ def chart_dispersao_geografica(df: pd.DataFrame):
     # Limitar a 200 pontos para performance
     df_sample = df.nlargest(200, "qt_votos") if len(df) > 200 else df.copy()
     
-    # Criar DataFrame apenas com colunas para o gráfico (sem Local na tabela)
+    # Criar DataFrame com todas as colunas necessárias
     local_col = "NM_LOCAL_VOTACAO" if "NM_LOCAL_VOTACAO" in df_sample.columns else "local_votacao"
-    
-    # DataFrame para o gráfico (sem coluna Local visível na tabela)
-    df_plot = pd.DataFrame({
-        "Votos": df_sample["qt_votos"],
-        "lon": df_sample["lon"],
-        "lat": df_sample["lat"]
-    })
-    
-    # DataFrame separado apenas para tooltip com Local
-    df_tooltip = pd.DataFrame({
+    df_clean = pd.DataFrame({
         "Local": df_sample[local_col].values,
         "Votos": df_sample["qt_votos"].values,
         "lon": df_sample["lon"].values,
         "lat": df_sample["lat"].values
     })
     
-    # Criar gráfico base
-    base = alt.Chart(df_plot).mark_circle(opacity=0.6).encode(
-        x=alt.X("lon:Q", title="Longitude", scale=alt.Scale(zero=False)),
-        y=alt.Y("lat:Q", title="Latitude", scale=alt.Scale(zero=False)),
-        size=alt.Size("Votos:Q", title="Votos", scale=alt.Scale(range=[50, 1000])),
-        color=alt.Color("Votos:Q", scale=alt.Scale(scheme="viridis"), title="Votos")
+    return (
+        alt.Chart(df_clean)
+        .mark_circle(opacity=0.6)
+        .encode(
+            x=alt.X("lon:Q", title="Longitude", scale=alt.Scale(zero=False)),
+            y=alt.Y("lat:Q", title="Latitude", scale=alt.Scale(zero=False)),
+            size=alt.Size("Votos:Q", title="Votos", scale=alt.Scale(range=[50, 1000])),
+            color=alt.Color("Votos:Q", scale=alt.Scale(scheme="viridis"), title="Votos"),
+            tooltip=[
+                alt.Tooltip("Local:N", title="Local"),
+                alt.Tooltip("Votos:Q", title="Votos", format=",.0f")
+            ]
+        )
+        .properties(height=400)
+        .configure_view(strokeWidth=0)
     )
-    
-    # Adicionar tooltip com dados do df_tooltip
-    tooltip_layer = alt.Chart(df_tooltip).mark_circle(opacity=0).encode(
-        x=alt.X("lon:Q"),
-        y=alt.Y("lat:Q"),
-        tooltip=[
-            alt.Tooltip("Local:N", title="Local"),
-            alt.Tooltip("Votos:Q", title="Votos", format=",.0f")
-        ]
-    )
-    
-    return (base + tooltip_layer).properties(height=400).configure_view(strokeWidth=0)
