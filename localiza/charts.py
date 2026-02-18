@@ -220,19 +220,26 @@ def chart_dispersao_geografica(df: pd.DataFrame):
     # Limitar a 200 pontos para performance
     df_sample = df.nlargest(200, "qt_votos") if len(df) > 200 else df.copy()
     
+    # Criar DataFrame limpo apenas com colunas necessárias para o gráfico
+    local_col = "NM_LOCAL_VOTACAO" if "NM_LOCAL_VOTACAO" in df_sample.columns else "local_votacao"
+    df_clean = pd.DataFrame({
+        "Local": df_sample[local_col],
+        "Votos": df_sample["qt_votos"],
+        "lon": df_sample["lon"],
+        "lat": df_sample["lat"]
+    })
+    
     return (
-        alt.Chart(df_sample)
+        alt.Chart(df_clean)
         .mark_circle(opacity=0.6)
         .encode(
             x=alt.X("lon:Q", title="Longitude", scale=alt.Scale(zero=False)),
             y=alt.Y("lat:Q", title="Latitude", scale=alt.Scale(zero=False)),
-            size=alt.Size("qt_votos:Q", title="Votos", scale=alt.Scale(range=[50, 1000])),
-            color=alt.Color("qt_votos:Q", scale=alt.Scale(scheme="viridis"), title="Votos"),
+            size=alt.Size("Votos:Q", title="Votos", scale=alt.Scale(range=[50, 1000])),
+            color=alt.Color("Votos:Q", scale=alt.Scale(scheme="viridis"), title="Votos"),
             tooltip=[
-                alt.Tooltip("NM_LOCAL_VOTACAO:N" if "NM_LOCAL_VOTACAO" in df.columns else "local_votacao:N", title="Local"),
-                alt.Tooltip("qt_votos:Q", title="Votos", format=",.0f"),
-                alt.Tooltip("lat:Q", title="Latitude", format=".4f"),
-                alt.Tooltip("lon:Q", title="Longitude", format=".4f")
+                alt.Tooltip("Local:N", title="Local"),
+                alt.Tooltip("Votos:Q", title="Votos", format=",.0f")
             ]
         )
         .properties(height=400)
