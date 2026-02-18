@@ -185,17 +185,16 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         local_col = "local_votacao"
 
     with col2:
-        mun = st.multiselect("Município", municipios, default=[])
+        mun = st.multiselect("Município", municipios, default=[], placeholder="Selecione")
     with col3:
-        bai = st.multiselect("Bairro/Distrito", bairros, default=[])
+        loc = st.multiselect("Buscar Local de Votação", locais, default=[], placeholder="Selecione")
     with col4:
-        loc = st.multiselect("Local de votação", locais, default=[])
+        # Coluna vazia para manter layout
+        st.empty()
 
     df_f = df.copy()
     if mun:
         df_f = df_f[df_f[mun_col].isin(mun)]
-    if bai and "Bairro/Distrito" in df_f.columns:
-        df_f = df_f[df_f["Bairro/Distrito"].isin(bai)]
     if loc:
         df_f = df_f[df_f[local_col].isin(loc)]
 
