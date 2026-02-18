@@ -511,12 +511,6 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
             st.markdown("📍 Dispersão Geográfica")
             ch_geo = chart_dispersao_geografica(base_df)
             if ch_geo is not None:
-                # CSS para ocultar menu de ações do Altair
-                st.markdown("""
-                    <style>
-                    .vega-actions { display: none !important; }
-                    </style>
-                """, unsafe_allow_html=True)
                 st.altair_chart(ch_geo, use_container_width=True)
                 st.caption("ℹ️ Tamanho e cor dos pontos proporcionais aos votos. Top 200 locais.")
             else:

@@ -236,6 +236,4 @@ def chart_dispersao_geografica(df: pd.DataFrame):
             ]
         )
         .properties(height=400)
-        .configure_view(strokeWidth=0)
-        .configure(padding=0)
     )
