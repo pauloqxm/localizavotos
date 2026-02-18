@@ -324,7 +324,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     
     if center is None:
         center = [float(df_f["lat"].mean()), float(df_f["lon"].mean())]
-        zoom_start = 11
+        if not is_municipios:
+            zoom_start = 11
 
     m = build_map(center=center, zoom_start=zoom_start)
     
