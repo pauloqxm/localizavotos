@@ -14,7 +14,7 @@ from .io_geo import discover_layers_geojson, read_geojson
 from .schema import bounds_center_from_geojson
 from .styles import load_layer_styles, resolve_layer_style
 from .map_folium import build_map, add_geojson_layer, add_points_layer, finalize_map
-from .charts import chart_top_locais, chart_bottom_locais, chart_top_bairros, chart_hist_votos, chart_top_municipios, chart_bottom_municipios
+from .charts import chart_top_locais, chart_bottom_locais, chart_top_bairros, chart_hist_votos, chart_top_municipios, chart_bottom_municipios, chart_concentracao_votos, chart_votos_por_zona, chart_dispersao_geografica
 
 try:
     from streamlit_folium import st_folium
@@ -494,6 +494,33 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         ch2 = chart_top_bairros(base_df)
         if ch2 is not None:
             st.altair_chart(ch2, use_container_width=True)
+        
+        st.markdown("📊 Análises Avançadas")
+        
+        g3, g4 = st.columns(2)
+        with g3:
+            st.markdown("🎯 Concentração de Votos (Curva de Pareto)")
+            ch_conc = chart_concentracao_votos(base_df)
+            if ch_conc is not None:
+                st.altair_chart(ch_conc, use_container_width=True)
+                st.caption("ℹ️ Mostra quantos locais concentram a maior parte dos votos. Linha vermelha = 80% dos votos.")
+            else:
+                st.info("Sem dados para análise de concentração.")
+        
+        with g4:
+            st.markdown("📍 Dispersão Geográfica")
+            ch_geo = chart_dispersao_geografica(base_df)
+            if ch_geo is not None:
+                st.altair_chart(ch_geo, use_container_width=True)
+                st.caption("ℹ️ Tamanho e cor dos pontos proporcionais aos votos. Top 200 locais.")
+            else:
+                st.info("Sem coordenadas para dispersão geográfica.")
+        
+        st.markdown("📊 Votos por Zona Eleitoral")
+        ch_zona = chart_votos_por_zona(base_df)
+        if ch_zona is not None:
+            st.altair_chart(ch_zona, use_container_width=True)
+            st.caption("ℹ️ Barras = total de votos | Linha vermelha = média de votos por local")
         
         st.markdown("Distribuição por faixa de votos")
         ch3 = chart_hist_votos(base_df)
