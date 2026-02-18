@@ -19,6 +19,18 @@ def check_password():
         else:
             st.session_state["password_correct"] = False
 
+    # CSS para ocultar sidebar antes do login
+    st.markdown(
+        """
+        <style>
+          [data-testid="stSidebar"] { display: none !important; }
+          [data-testid="stSidebarNav"] { display: none !important; }
+          section[data-testid="stSidebar"] { display: none !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # Primeira execução ou senha incorreta
     if "password_correct" not in st.session_state:
         # Primeira execução, mostrar input
