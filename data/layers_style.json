@@ -29,6 +29,13 @@
         "iconSize": 15
       }
     },
+    "lider_quixeramobim": {
+      "point": {
+        "mode": "icon",
+        "iconUrl": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+        "iconSize": 30
+      }
+    },
     "crateus_assentamentos": {
       "polygon": {
         "color": "#e27104",

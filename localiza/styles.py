@@ -52,9 +52,13 @@ def resolve_layer_style(layer_meta: dict[str, Any], styles: dict[str, Any]) -> d
     base = default_style_for_kind(layer_type, kind)
     base = merge_dict(base, (defaults.get(kind) or {}))
 
-    # Regra automática: arquivos começando com locais_ herdam estilo de locais_fortaleza
+    # Regras automáticas de herança de estilo
     if stem.startswith("locais_") and stem not in layers_cfg:
+        # Arquivos locais_ herdam de locais_fortaleza
         per = layers_cfg.get("locais_fortaleza") or {}
+    elif stem.startswith("lider_") and stem not in layers_cfg:
+        # Arquivos lider_ herdam de lider_quixeramobim
+        per = layers_cfg.get("lider_quixeramobim") or {}
     else:
         # por nome da camada (stem)
         per = layers_cfg.get(stem) or layers_cfg.get(stem.lower()) or {}

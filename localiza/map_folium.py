@@ -145,6 +145,9 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
         if first_geom == "Point":
             fg = folium.FeatureGroup(name=name, show=bool(style.get("show", True)))
             
+            # Detectar se é camada de líderes para tooltip especial
+            is_lider = "lider" in name.lower()
+            
             for feature in geojson.get("features", []):
                 geom = feature.get("geometry", {})
                 props = feature.get("properties", {})
@@ -156,7 +159,23 @@ def add_geojson_layer(m: folium.Map, name: str, geojson: dict[str, Any], style: 
                         icon_size = style.get("iconSize", 25)
                         
                         icon = folium.CustomIcon(icon_url, icon_size=(icon_size, icon_size))
-                        tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
+                        
+                        # Tooltip melhorado para líderes
+                        if is_lider:
+                            tooltip_lines = []
+                            # Campos prioritários para líderes
+                            priority_fields = ["nome", "NOME", "Nome", "local", "LOCAL", "Local", "telefone", "TELEFONE", "Telefone"]
+                            for field in priority_fields:
+                                if field in props and props[field]:
+                                    emoji = "👤" if "nome" in field.lower() else "📍" if "local" in field.lower() else "📞"
+                                    tooltip_lines.append(f"{emoji} <b>{field}</b>: {props[field]}")
+                            # Adicionar outros campos
+                            for k, v in props.items():
+                                if k not in priority_fields and v and len(tooltip_lines) < 5:
+                                    tooltip_lines.append(f"<b>{k}</b>: {v}")
+                            tooltip_text = "<br>".join(tooltip_lines)
+                        else:
+                            tooltip_text = "<br>".join([f"<b>{k}</b>: {v}" for k, v in props.items() if v][:5])
                         
                         folium.Marker(
                             location=[coords[1], coords[0]],
