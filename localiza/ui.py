@@ -103,8 +103,8 @@ def header(title: str, subtitle: str):
               <div class="lv-title">{title}</div>
               <div class="lv-sub">{subtitle}</div>
             </div>
-            <div class="loading-spinner">
-              <div class="spinner"></div>
+            <div class="loading-spinner" id="loadingSpinner">
+              <div class="spinner" id="spinnerCircle"></div>
             </div>
           </div>
         </div>
@@ -119,12 +119,50 @@ def header(title: str, subtitle: str):
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
+            transition: all 0.3s ease;
+          }}
+          .spinner.loaded {{
+            animation: none;
+            border: 4px solid #2ecc71;
+            background-color: #2ecc71;
+            position: relative;
+          }}
+          .spinner.loaded::after {{
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
           }}
           @keyframes spin {{
             0% {{ transform: rotate(0deg); }}
             100% {{ transform: rotate(360deg); }}
           }}
         </style>
+        <script>
+          // Detectar quando a página termina de carregar
+          window.addEventListener('load', function() {{
+            setTimeout(function() {{
+              const spinner = document.getElementById('spinnerCircle');
+              if (spinner) {{
+                spinner.classList.add('loaded');
+              }}
+            }}, 1000);
+          }});
+          
+          // Também detectar quando o Streamlit termina de renderizar
+          document.addEventListener('DOMContentLoaded', function() {{
+            setTimeout(function() {{
+              const spinner = document.getElementById('spinnerCircle');
+              if (spinner) {{
+                spinner.classList.add('loaded');
+              }}
+            }}, 2000);
+          }});
+        </script>
         """,
         unsafe_allow_html=True,
     )
