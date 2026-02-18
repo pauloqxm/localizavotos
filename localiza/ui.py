@@ -320,12 +320,12 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
     else:
         bounds_gj = read_geojson(bounds_file) if bounds_file else {}
         bounds, center = bounds_center_from_geojson(bounds_gj) if bounds_gj else (None, None)
-        zoom_start = 11
+        zoom_start = 10
     
     if center is None:
         center = [float(df_f["lat"].mean()), float(df_f["lon"].mean())]
         if not is_municipios:
-            zoom_start = 11
+            zoom_start = 10
 
     m = build_map(center=center, zoom_start=zoom_start)
     
