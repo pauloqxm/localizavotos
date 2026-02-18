@@ -143,25 +143,20 @@ def header(title: str, subtitle: str):
           }}
         </style>
         <script>
-          // Detectar quando o Streamlit termina de renderizar
-          function checkLoaded() {{
-            const spinner = document.getElementById('spinnerCircle');
-            if (spinner && !spinner.classList.contains('loaded')) {{
-              // Verificar se há iframes (mapa) carregados
-              const iframes = document.querySelectorAll('iframe');
-              const hasMap = iframes.length > 0;
-              
-              if (hasMap) {{
-                spinner.classList.add('loaded');
-              }} else {{
-                // Tentar novamente em 500ms
-                setTimeout(checkLoaded, 500);
+          (function() {{
+            function checkLoaded() {{
+              const spinner = document.getElementById('spinnerCircle');
+              if (spinner && !spinner.classList.contains('loaded')) {{
+                const iframes = document.querySelectorAll('iframe');
+                if (iframes.length > 0) {{
+                  spinner.classList.add('loaded');
+                }} else {{
+                  setTimeout(checkLoaded, 500);
+                }}
               }}
             }}
-          }}
-          
-          // Iniciar verificação após um pequeno delay
-          setTimeout(checkLoaded, 1000);
+            setTimeout(checkLoaded, 1000);
+          }})();
         </script>
         """,
         unsafe_allow_html=True,
