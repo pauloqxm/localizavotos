@@ -98,76 +98,11 @@ def header(title: str, subtitle: str):
     st.markdown(
         f"""
         <div class="lv-header">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div class="lv-title">{title}</div>
-              <div class="lv-sub">{subtitle}</div>
-            </div>
-            <div class="loading-spinner" id="loadingSpinner">
-              <div class="spinner" id="spinnerCircle"></div>
-            </div>
-          </div>
+          <div class="lv-title">{title}</div>
+          <div class="lv-sub">{subtitle}</div>
         </div>
-        <style>
-          .loading-spinner {{
-            display: inline-block;
-          }}
-          .spinner {{
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            transition: all 0.3s ease;
-          }}
-          .spinner.loaded {{
-            animation: none;
-            border: 4px solid #2ecc71;
-            background-color: #2ecc71;
-            position: relative;
-          }}
-          .spinner.loaded::after {{
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-          }}
-          @keyframes spin {{
-            0% {{ transform: rotate(0deg); }}
-            100% {{ transform: rotate(360deg); }}
-          }}
-        </style>
         """,
         unsafe_allow_html=True,
-    )
-    
-    # JavaScript separado usando components.html
-    import streamlit.components.v1 as components
-    components.html(
-        """
-        <script>
-          (function() {
-            function checkLoaded() {
-              const spinner = parent.document.getElementById('spinnerCircle');
-              if (spinner && !spinner.classList.contains('loaded')) {
-                const iframes = parent.document.querySelectorAll('iframe');
-                if (iframes.length > 2) {
-                  spinner.classList.add('loaded');
-                } else {
-                  setTimeout(checkLoaded, 500);
-                }
-              }
-            }
-            setTimeout(checkLoaded, 1000);
-          })();
-        </script>
-        """,
-        height=0,
     )
 
 def discover_candidates(candidatos_dir: Path = CANDIDATOS_DIR) -> list[Path]:
