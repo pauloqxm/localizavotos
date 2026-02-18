@@ -11,7 +11,7 @@ def check_password():
         """Verifica se a senha está correta."""
         # Hash SHA256 da senha (para segurança)
         # Senha padrão: "admin123" - ALTERE ISSO!
-        senha_hash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+        senha_hash = "1eef4875dc2f361f3fe041bf66c3dea9ffe85bbe437505dc88629304188846e4"
         
         if hashlib.sha256(st.session_state["password"].encode()).hexdigest() == senha_hash:
             st.session_state["password_correct"] = True
