@@ -98,11 +98,33 @@ def header(title: str, subtitle: str):
     st.markdown(
         f"""
         <div class="lv-header">
-          <div>
-            <div class="lv-title">{title}</div>
-            <div class="lv-sub">{subtitle}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="lv-title">{title}</div>
+              <div class="lv-sub">{subtitle}</div>
+            </div>
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+            </div>
           </div>
         </div>
+        <style>
+          .loading-spinner {{
+            display: inline-block;
+          }}
+          .spinner {{
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+          }}
+          @keyframes spin {{
+            0% {{ transform: rotate(0deg); }}
+            100% {{ transform: rotate(360deg); }}
+          }}
+        </style>
         """,
         unsafe_allow_html=True,
     )
