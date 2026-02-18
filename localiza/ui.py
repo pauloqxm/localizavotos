@@ -503,11 +503,28 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
             st.altair_chart(ch3, use_container_width=True)
 
     st.subheader("📄 Tabela")
+    
+    # Preparar colunas para exibição (sem coordenadas)
     if is_municipios:
-        # Usar coluna original se existir
-        cols_show = [mun_col, "qt_votos", "lat", "lon"]
+        cols_show = [mun_col, "qt_votos"]
     else:
-        # Usar colunas originais se existirem
-        cols_show = [local_col, mun_col, "Bairro/Distrito", "Endereço", "qt_votos", "lat", "lon"]
+        cols_show = [local_col, mun_col, "Bairro/Distrito", "Endereço", "qt_votos"]
     cols_show = [c for c in cols_show if c in base_df.columns]
-    st.dataframe(base_df[cols_show].sort_values("qt_votos", ascending=False), use_container_width=True)
+    
+    # Criar DataFrame para exibição
+    df_display = base_df[cols_show].sort_values("qt_votos", ascending=False)
+    
+    # Botão de download estilizado
+    col_btn, col_space = st.columns([1, 5])
+    with col_btn:
+        csv = df_display.to_csv(index=False, encoding='utf-8-sig')
+        st.download_button(
+            label="📥 Baixar CSV",
+            data=csv,
+            file_name=f"localizavotos_{votos_file.stem if votos_file else 'dados'}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    
+    # Exibir tabela
+    st.dataframe(df_display, use_container_width=True)
