@@ -565,6 +565,20 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Gate (evita flash antes da validação JWT) ───────────── */
+    .adm-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .adm-gate p { color: var(--text-muted); font-size: 0.875rem; }
+
     /* ── Responsivo ──────────────────────────────────────────── */
     @media (max-width: 640px) {
       .adm-cand-card { grid-template-columns: auto 1fr; }
@@ -575,7 +589,11 @@
   </style>
 </head>
 <body>
-<div class="admin-wrap">
+<div id="adminGate" class="adm-gate" aria-live="polite">
+  <div class="adm-spinner"></div>
+  <p>Verificando sessão…</p>
+</div>
+<div class="admin-wrap" id="adminRoot" style="display:none">
 
   <!-- ── Navbar ────────────────────────────────────────────────────── -->
   <nav class="adm-nav">
@@ -709,20 +727,68 @@
 <script>
 'use strict';
 
-const API   = '';
-const TOKEN = localStorage.getItem('lv_token');
-const ROLE  = localStorage.getItem('lv_role');
+const API = '';
 
-// ── Autenticação ──────────────────────────────────────────────────────────
-if (!TOKEN || ROLE !== 'admin') {
-  window.location.href = '/login.html';
+function getAuthToken() {
+  return localStorage.getItem('lv_token');
 }
 
-document.getElementById('navUser').textContent = localStorage.getItem('lv_display_name') || 'Admin';
+/** Remove só dados de login (mantém lv_theme etc.) */
+function clearAuthSession() {
+  ['lv_token', 'lv_slug', 'lv_display_name', 'lv_role', 'lv_bases'].forEach(k => localStorage.removeItem(k));
+}
+
+function showAdminShell() {
+  const gate = document.getElementById('adminGate');
+  const root = document.getElementById('adminRoot');
+  if (gate) gate.style.display = 'none';
+  if (root) root.style.display = '';
+}
 
 function logout() {
-  localStorage.clear();
+  clearAuthSession();
   window.location.href = '/';
+}
+
+/**
+ * Valida o JWT no servidor (/api/me) e sincroniza lv_role no localStorage.
+ * Evita redirecionar quando lv_role está ausente mas o token é de admin válido.
+ */
+async function bootstrapAdmin() {
+  const token = getAuthToken();
+  if (!token) {
+    window.location.href = '/login.html';
+    return;
+  }
+  try {
+    const res = await fetch(`${API}/api/me`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (res.status === 401 || res.status === 403) {
+      clearAuthSession();
+      window.location.href = '/login.html';
+      return;
+    }
+    if (!res.ok) {
+      clearAuthSession();
+      window.location.href = '/login.html';
+      return;
+    }
+    const me = await res.json();
+    if (me.role !== 'admin') {
+      window.location.href = '/login.html?from=admin';
+      return;
+    }
+    localStorage.setItem('lv_role', me.role);
+    localStorage.setItem('lv_display_name', me.display_name || 'Admin');
+    localStorage.setItem('lv_slug', me.slug || '');
+    document.getElementById('navUser').textContent = me.display_name || 'Admin';
+    showAdminShell();
+    await loadCandidates();
+  } catch (_) {
+    clearAuthSession();
+    window.location.href = '/login.html';
+  }
 }
 
 // ── SHA-256 via SubtleCrypto (nativo, sem dependência) ───────────────────
@@ -772,14 +838,19 @@ function copyHash() {
 // ── Carregar candidatos ───────────────────────────────────────────────────
 async function loadCandidates() {
   const list = document.getElementById('candidatesList');
+  const token = getAuthToken();
+  if (!token) {
+    window.location.href = '/login.html';
+    return;
+  }
   list.innerHTML = '<div class="adm-spinner"></div>';
 
   try {
     const res = await fetch(`${API}/api/admin/candidatos-full`, {
-      headers: { 'Authorization': `Bearer ${TOKEN}` }
+      headers: { 'Authorization': `Bearer ${token}` },
     });
     if (res.status === 401 || res.status === 403) {
-      localStorage.clear();
+      clearAuthSession();
       window.location.href = '/login.html';
       return;
     }
@@ -915,7 +986,7 @@ async function saveCredentials() {
   try {
     const res = await fetch(`${API}/api/admin/candidato/${_currentSlug}/credentials`, {
       method: 'PUT',
-      headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -948,7 +1019,7 @@ function escAttr(s) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
-loadCandidates();
+bootstrapAdmin();
 </script>
 </body>
 </html>
