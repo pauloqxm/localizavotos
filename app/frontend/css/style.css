@@ -72,33 +72,30 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--shadow);
 }
 
+/* Logo de marca (CDN) — reutilizado em navbar e telas de auth */
+.lv-brand-logo {
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+}
+.lv-brand-logo--nav {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+.lv-brand-logo--auth {
+  width: 44px;
+  height: 44px;
+}
+
 .auth-logo {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 6px;
 }
-
-.auth-logo-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.auth-logo-text {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
-}
-
-.auth-logo-text span { color: var(--accent); }
 
 .auth-subtitle {
   color: var(--text-muted);
@@ -326,24 +323,6 @@ a:hover { text-decoration: underline; }
   gap: 10px;
   flex-shrink: 0;
 }
-
-.nav-logo-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--accent);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.nav-logo-text {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.nav-logo-text span { color: var(--accent); }
 
 .nav-candidate {
   font-size: 0.82rem;
