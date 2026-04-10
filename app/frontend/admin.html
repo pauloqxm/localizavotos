@@ -70,7 +70,7 @@
       font-weight: 600;
       background: var(--accent-muted);
       color: var(--accent);
-      border: 1px solid rgba(230,57,70,.2);
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
       border-radius: 99px;
       padding: 3px 10px;
     }
@@ -406,7 +406,7 @@
     .adm-btn-accent {
       background: var(--accent-muted);
       color: var(--accent);
-      border-color: rgba(230,57,70,.25);
+      border-color: color-mix(in srgb, var(--accent) 28%, transparent);
     }
 
     .adm-btn-accent:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -535,7 +535,7 @@
       margin-top: 12px;
     }
 
-    .adm-alert.show { display: block; }
+    .adm-alert.show { display: block; white-space: pre-line; }
     .adm-alert-success { background: var(--success-muted); border: 1px solid rgba(45,201,55,.35); color: #5edd67; }
     .adm-alert-error   { background: var(--accent-muted);  border: 1px solid rgba(230,57,70,.35);  color: #ff7b84; }
 
@@ -994,8 +994,19 @@ async function saveCredentials() {
       showModalAlert(data.detail || 'Erro ao salvar.', 'error');
       return;
     }
-    showModalAlert('✓ Credenciais salvas com sucesso!', 'success');
-    setTimeout(() => { closeModal(); loadCandidates(); }, 1200);
+    let okMsg = '✓ Credenciais salvas no servidor.';
+    const gh = data.github;
+    if (gh) {
+      if (gh.synced) {
+        okMsg += '\n✓ Repositório GitHub atualizado (' + (gh.branch || 'main') + ').';
+      } else if (gh.skipped) {
+        okMsg += '\n(GitHub não configurado: defina GITHUB_TOKEN, GITHUB_OWNER e GITHUB_REPO no Railway.)';
+      } else {
+        okMsg += '\n⚠ GitHub: ' + (gh.detail || 'não foi possível sincronizar.');
+      }
+    }
+    showModalAlert(okMsg, 'success');
+    setTimeout(() => { closeModal(); loadCandidates(); }, gh && gh.synced ? 1800 : 1400);
   } catch (e) {
     showModalAlert('Erro de conexão: ' + e.message, 'error');
   } finally {

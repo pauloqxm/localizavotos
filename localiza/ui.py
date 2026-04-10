@@ -53,13 +53,13 @@ def hide_sidebar():
             width: 100%;
             padding: 20px 32px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
             margin-bottom: 24px;
             transition: box-shadow 0.2s;
           }
           .lv-header:hover {
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
           }
           .lv-title { 
             font-size: 28px;
@@ -203,7 +203,7 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
         
         if min_votos < max_votos:
             # Título fora do retângulo
-            st.markdown('<h4 style="margin: 0 0 10px 0; color: #667eea;">🎯 Filtrar por quantidade de votos</h4>', unsafe_allow_html=True)
+            st.markdown('<h4 style="margin: 0 0 10px 0; color: #3b82f6;">🎯 Filtrar por quantidade de votos</h4>', unsafe_allow_html=True)
             
             # CSS para estilizar o container
             st.markdown("""
@@ -211,8 +211,8 @@ def render_candidate(candidate_folder: Path, title: str, subtitle: str, votos_fi
                 div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stSlider"]) {
                     padding: 20px;
                     border-radius: 10px;
-                    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-                    border: 2px solid #667eea;
+                    background: linear-gradient(135deg, #3b82f615 0%, #2563eb18 100%);
+                    border: 2px solid #3b82f6;
                     margin-bottom: 20px;
                 }
                 </style>

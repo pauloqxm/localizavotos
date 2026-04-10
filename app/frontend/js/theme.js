@@ -14,7 +14,7 @@ const THEMES = {
 const STORAGE_KEY = 'lv_theme';
 
 function applyTheme(key) {
-  const t = THEMES[key] || THEMES.vermelho;
+  const t = THEMES[key] || THEMES.azul;
   const root = document.documentElement;
   root.style.setProperty('--accent',       t.color);
   root.style.setProperty('--accent-hover', t.hover);
@@ -32,7 +32,7 @@ function setTheme(key) {
 }
 
 function loadTheme() {
-  const saved = localStorage.getItem(STORAGE_KEY) || 'vermelho';
+  const saved = localStorage.getItem(STORAGE_KEY) || 'azul';
   applyTheme(saved);
   return saved;
 }

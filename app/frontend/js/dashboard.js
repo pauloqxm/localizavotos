@@ -29,6 +29,11 @@ const GEO_SUFFIXES = ['_distritos', '_bairros', '_zonas'];
 // Chart.js instances (para destruir antes de recriar)
 const _charts = {};
 
+function cssAccentColor() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  return v || '#3b82f6';
+}
+
 // ─── Tile layers disponíveis ──────────────────────────────────────────────────
 const TILES = {
   dark: {
@@ -697,7 +702,7 @@ function renderChartsLocal(props) {
         data: {
           labels: zonas.map(z => `Zona ${z[0]}`),
           datasets: [
-            { label: 'Total', data: zonas.map(z => z[1].total), backgroundColor: '#e63946', borderRadius: 3, yAxisID: 'y' },
+            { label: 'Total', data: zonas.map(z => z[1].total), backgroundColor: cssAccentColor(), borderRadius: 3, yAxisID: 'y' },
             {
               label: 'Média', type: 'line',
               data: zonas.map(z => parseFloat((z[1].total / z[1].count).toFixed(1))),

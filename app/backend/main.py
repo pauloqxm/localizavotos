@@ -15,11 +15,18 @@ Variáveis de ambiente:
   APP_BASE_URL         — URL pública da aplicação (para links no e-mail)
   CANDIDATOS_DIR       — caminho da pasta candidatos (padrão: ../../candidatos)
   DATA_DIR             — caminho da pasta data (padrão: ../../data)
+
+  Sincronizar credentials.json no GitHub (opcional, após salvar no admin):
+  GITHUB_TOKEN         — Fine-grained ou classic PAT com escopo repo (Contents: Read and write)
+  GITHUB_OWNER         — ex: pauloqxm
+  GITHUB_REPO          — ex: localizavotos
+  GITHUB_BRANCH        — branch (padrão: main)
 """
 
 from __future__ import annotations
 
 import asyncio
+import base64
 import hashlib
 import json
 import os
@@ -38,6 +45,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
+import httpx
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
@@ -45,7 +53,7 @@ from pydantic import BaseModel
 # Configuração
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-in-production-immediately")
+SECRET_KEY = (os.getenv("SECRET_KEY", "dev-secret-change-in-production-immediately") or "").strip() or "dev-secret-change-in-production-immediately"
 ALGORITHM = "HS256"
 TOKEN_HOURS = 24
 RESET_MINUTES = 30
@@ -65,8 +73,15 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:8000")
 
 ADMIN_USERNAME = (os.getenv("ADMIN_USERNAME", "admin") or "admin").strip()
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
-ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", "")
+ADMIN_EMAIL = (os.getenv("ADMIN_EMAIL", "") or "").strip()
+# Deve ser o hex de 64 caracteres: hashlib.sha256("sua_senha".encode()).hexdigest()
+# NÃO use o gerador aleatório do Railway (${{ secret(...) }}) — isso não é hash de senha.
+ADMIN_PASSWORD_HASH = (os.getenv("ADMIN_PASSWORD_HASH", "") or "").strip()
+
+GITHUB_TOKEN = (os.getenv("GITHUB_TOKEN", "") or "").strip()
+GITHUB_OWNER = (os.getenv("GITHUB_OWNER", "") or "").strip()
+GITHUB_REPO = (os.getenv("GITHUB_REPO", "") or "").strip()
+GITHUB_BRANCH = (os.getenv("GITHUB_BRANCH", "main") or "main").strip()
 
 # armazenamento em memória dos tokens de reset  {token: {slug, expires_at}}
 _reset_store: dict[str, dict] = {}
@@ -79,6 +94,13 @@ _executor = ThreadPoolExecutor(max_workers=2)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if ADMIN_PASSWORD_HASH:
+        print(f"[startup] Login admin habilitado (usuário: {ADMIN_USERNAME!r}).")
+    else:
+        print("[startup] AVISO: ADMIN_PASSWORD_HASH vazio — login web como admin não funciona.")
+    if GITHUB_TOKEN and GITHUB_OWNER and GITHUB_REPO:
+        print(f"[startup] GitHub sync: {GITHUB_OWNER}/{GITHUB_REPO} (branch {GITHUB_BRANCH})")
+
     ce_file = DATA_DIR / "ce_regioes.geojson"
     if ce_file.exists():
         try:
@@ -481,6 +503,64 @@ async def get_layer(source: str, name: str, payload: dict = Depends(_get_current
 
 
 # ---------------------------------------------------------------------------
+# GitHub — enviar credentials.json (Contents API)
+# ---------------------------------------------------------------------------
+
+async def _sync_credentials_to_github(slug: str, json_text: str) -> dict[str, Any]:
+    """Atualiza `candidatos/<slug>/credentials.json` no repositório remoto."""
+    if not (GITHUB_TOKEN and GITHUB_OWNER and GITHUB_REPO):
+        return {
+            "synced": False,
+            "skipped": True,
+            "detail": "Defina GITHUB_TOKEN, GITHUB_OWNER e GITHUB_REPO nas variáveis de ambiente.",
+        }
+
+    path = f"candidatos/{slug}/credentials.json"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{path}"
+    b64 = base64.b64encode(json_text.encode("utf-8")).decode("ascii")
+
+    try:
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            r = await client.get(url, headers=headers, params={"ref": GITHUB_BRANCH})
+            sha = None
+            if r.status_code == 200:
+                sha = (r.json() or {}).get("sha")
+            elif r.status_code != 404:
+                return {
+                    "synced": False,
+                    "detail": f"GitHub leitura HTTP {r.status_code}: {(r.text or '')[:280]}",
+                    "branch": GITHUB_BRANCH,
+                }
+
+            payload: dict[str, Any] = {
+                "message": f"chore(admin): atualiza credenciais {slug}",
+                "content": b64,
+                "branch": GITHUB_BRANCH,
+            }
+            if sha:
+                payload["sha"] = sha
+
+            r2 = await client.put(url, headers=headers, json=payload)
+            if r2.status_code not in (200, 201):
+                return {
+                    "synced": False,
+                    "detail": f"GitHub gravação HTTP {r2.status_code}: {(r2.text or '')[:280]}",
+                    "branch": GITHUB_BRANCH,
+                }
+
+            body = r2.json()
+            commit_sha = (body.get("commit") or {}).get("sha") or ""
+            return {"synced": True, "commit_sha": commit_sha, "branch": GITHUB_BRANCH}
+    except Exception as exc:
+        return {"synced": False, "detail": str(exc), "branch": GITHUB_BRANCH}
+
+
+# ---------------------------------------------------------------------------
 # Rotas admin — gestão de candidatos
 # ---------------------------------------------------------------------------
 
@@ -524,8 +604,14 @@ async def admin_update_credentials(slug: str, body: CredentialsBody, payload: di
         existing["email"] = body.email
     if body.password_hash is not None:
         existing["password_hash"] = body.password_hash
-    cred_file.write_text(json.dumps(existing, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"message": "Credenciais atualizadas com sucesso.", "slug": slug}
+    json_text = json.dumps(existing, ensure_ascii=False, indent=2)
+    cred_file.write_text(json_text, encoding="utf-8")
+    github_meta = await _sync_credentials_to_github(slug, json_text)
+    return {
+        "message": "Credenciais atualizadas com sucesso.",
+        "slug": slug,
+        "github": github_meta,
+    }
 
 
 # ---------------------------------------------------------------------------

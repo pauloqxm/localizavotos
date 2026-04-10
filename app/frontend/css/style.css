@@ -10,9 +10,9 @@
   --surface-3: #2d3147;
   --border: #2d3040;
   --border-light: #383c52;
-  --accent: #e63946;
-  --accent-hover: #c1121f;
-  --accent-muted: rgba(230, 57, 70, 0.12);
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-muted: rgba(59, 130, 246, 0.12);
   --text: #e8eaf0;
   --text-muted: #8b90a7;
   --text-dim: #555a6e;
@@ -57,7 +57,7 @@ a:hover { text-decoration: underline; }
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(230, 57, 70, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 90%, rgba(100, 110, 200, 0.05) 0%, transparent 60%),
     var(--bg);
 }
@@ -150,7 +150,7 @@ a:hover { text-decoration: underline; }
 .form-input:focus,
 .form-select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .form-select {
@@ -266,7 +266,7 @@ a:hover { text-decoration: underline; }
 }
 .alert.show { display: block; }
 .alert-error {
-  background: var(--accent-muted);
+  background: rgba(230, 57, 70, 0.12);
   border: 1px solid rgba(230, 57, 70, 0.4);
   color: #ff7b84;
 }

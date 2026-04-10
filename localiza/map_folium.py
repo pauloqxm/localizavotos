@@ -567,10 +567,10 @@ def finalize_map(m: folium.Map):
         display: block;
         font-weight: bold;
         font-size: 14px;
-        color: #667eea;
+        color: #2563eb;
         margin-bottom: 6px;
         padding-bottom: 6px;
-        border-bottom: 2px solid #667eea;
+        border-bottom: 2px solid #2563eb;
     }
     
     .leaflet-control-layers-overlays::before {
@@ -578,10 +578,10 @@ def finalize_map(m: folium.Map):
         display: block;
         font-weight: bold;
         font-size: 14px;
-        color: #764ba2;
+        color: #3b82f6;
         margin: 12px 0 6px 0;
         padding-bottom: 6px;
-        border-bottom: 2px solid #764ba2;
+        border-bottom: 2px solid #3b82f6;
     }
     
     /* Estilo dos itens - espaçamento reduzido */
@@ -605,7 +605,7 @@ def finalize_map(m: folium.Map):
     }
     
     .leaflet-control-layers label:hover {
-        background: rgba(102, 126, 234, 0.1) !important;
+        background: rgba(59, 130, 246, 0.1) !important;
     }
     
     .leaflet-control-layers input[type="radio"],
@@ -625,12 +625,12 @@ def finalize_map(m: folium.Map):
     }
     
     .leaflet-control-layers-expanded::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         border-radius: 10px;
     }
     
     .leaflet-control-layers-expanded::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
     }
     
     /* Forçar containers do lado direito a ficarem visíveis */
