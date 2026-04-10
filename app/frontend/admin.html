@@ -766,12 +766,12 @@ async function bootstrapAdmin() {
     });
     if (res.status === 401 || res.status === 403) {
       clearAuthSession();
-      window.location.href = '/login.html';
+      window.location.href = '/login.html?reason=session';
       return;
     }
     if (!res.ok) {
       clearAuthSession();
-      window.location.href = '/login.html';
+      window.location.href = '/login.html?reason=session';
       return;
     }
     const me = await res.json();
@@ -787,7 +787,7 @@ async function bootstrapAdmin() {
     await loadCandidates();
   } catch (_) {
     clearAuthSession();
-    window.location.href = '/login.html';
+    window.location.href = '/login.html?reason=session';
   }
 }
 
@@ -851,7 +851,7 @@ async function loadCandidates() {
     });
     if (res.status === 401 || res.status === 403) {
       clearAuthSession();
-      window.location.href = '/login.html';
+      window.location.href = '/login.html?reason=session';
       return;
     }
     const data = await res.json();

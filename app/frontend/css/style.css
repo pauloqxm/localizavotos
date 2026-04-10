@@ -276,6 +276,13 @@ a:hover { text-decoration: underline; }
   color: #5edd67;
 }
 
+.alert-hint {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+  margin-bottom: 16px;
+}
+
 /* --- Spinner inline --- */
 .btn-spinner {
   width: 16px;

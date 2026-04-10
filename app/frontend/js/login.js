@@ -2,18 +2,54 @@
 
 const API = '';  // mesmo origem
 
-// Redireciona se já está logado
-(function checkAuth() {
-  const token = localStorage.getItem('lv_token');
-  if (token) {
-    const role = localStorage.getItem('lv_role');
-    window.location.href = role === 'admin' ? '/admin.html' : '/dashboard.html';
-  }
-})();
+function clearStaleAuth() {
+  ['lv_token', 'lv_slug', 'lv_display_name', 'lv_role', 'lv_bases'].forEach((k) =>
+    localStorage.removeItem(k)
+  );
+}
 
+/**
+ * Se existir token no navegador, valida no servidor antes de redirecionar.
+ * Evita loop admin ↔ login quando SECRET_KEY mudou (JWT antigo inválido).
+ */
+(function validateStoredSession() {
+  const token = localStorage.getItem('lv_token');
+  if (!token) return;
+  fetch(`${API}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(async (res) => {
+      if (res.status === 401 || res.status === 403 || !res.ok) {
+        clearStaleAuth();
+        return;
+      }
+      const me = await res.json();
+      localStorage.setItem('lv_role', me.role);
+      localStorage.setItem('lv_display_name', me.display_name || '');
+      localStorage.setItem('lv_slug', me.slug || '');
+      window.location.href = me.role === 'admin' ? '/admin.html' : '/dashboard.html';
+    })
+    .catch(() => clearStaleAuth());
+})();
 
 // ── Campos com texto de dica (apaga ao clicar, restaura se sair vazio) ───────
 document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reason') === 'session') {
+    const hint = document.getElementById('sessionHint');
+    if (hint) {
+      hint.classList.add('show');
+      hint.textContent =
+        'Sua sessão expirou ou a SECRET_KEY do servidor foi alterada. Os tokens antigos deixam de valer — entre de novo. Admin: usuário "admin" (ou o seu ADMIN_USERNAME) e a senha correspondente ao ADMIN_PASSWORD_HASH.';
+    }
+  }
+  if (params.get('from') === 'admin') {
+    const hint = document.getElementById('sessionHint');
+    if (hint && !hint.classList.contains('show')) {
+      hint.classList.add('show');
+      hint.textContent =
+        'O painel administrativo é só para o usuário administrador. Entre com a conta admin ou use o link da plataforma para candidatos.';
+    }
+  }
+
   const hints = [
     { id: 'username', hint: 'Seu usuário', realType: 'text'     },
     { id: 'password', hint: 'Sua senha',   realType: 'password' },
