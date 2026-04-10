@@ -17,14 +17,28 @@ print(hash_senha)
 
 3. Substitua o valor de `senha_hash` no arquivo `app.py` (linha ~14) pelo novo hash
 
-## Configuração no Railway
+## Configuração no Railway (FastAPI / login web)
 
-Para configurar a senha no Railway sem alterar o código:
+Não existe uma variável chamada apenas `ADMIN`. Use estas (o nome do login padrão é `admin`):
 
-1. Vá em Settings → Variables
-2. Adicione uma variável: `ADMIN_PASSWORD_HASH`
-3. Cole o hash SHA256 da sua senha
-4. Redeploy a aplicação
+| Variável | Obrigatório | Descrição |
+|----------|-------------|-----------|
+| `SECRET_KEY` | Sim | Chave aleatória longa para assinar os tokens JWT |
+| `ADMIN_PASSWORD_HASH` | Sim | Hash SHA-256 da senha do administrador |
+| `ADMIN_EMAIL` | Sim | E-mail do admin (recuperação de senha) |
+| `ADMIN_USERNAME` | Não | Login do admin (padrão: `admin`) |
+| `APP_BASE_URL` | Recomendado | URL pública do app (ex: `https://seu-app.up.railway.app`) |
+
+Passos:
+
+1. Vá em **Variables** no serviço Railway
+2. Crie `ADMIN_PASSWORD_HASH` com o hash SHA-256 da sua senha
+3. Crie `SECRET_KEY` (ex.: `python -c "import secrets; print(secrets.token_hex(32))"`)
+4. Crie `ADMIN_EMAIL` com seu e-mail
+5. (Opcional) Crie `ADMIN_USERNAME` se quiser outro login além de `admin`
+6. Faça redeploy
+
+No **login** use: usuário = valor de `ADMIN_USERNAME` ou `admin`, e a senha em texto plano (a que você usou para gerar o hash).
 
 ## Segurança
 

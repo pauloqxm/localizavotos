@@ -5,8 +5,9 @@ Serve a API REST e os arquivos estáticos do frontend.
 
 Variáveis de ambiente:
   SECRET_KEY           — chave de assinatura JWT (obrigatória em produção)
-  ADMIN_PASSWORD_HASH  — SHA-256 da senha do admin
+  ADMIN_PASSWORD_HASH  — SHA-256 da senha do admin (obrigatório para login admin)
   ADMIN_EMAIL          — e-mail do admin para recuperação de senha
+  ADMIN_USERNAME       — login do admin (padrão: admin)
   SMTP_HOST            — ex: smtp.gmail.com
   SMTP_PORT            — padrão 587
   SMTP_USER            — remetente SMTP
@@ -63,7 +64,7 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:8000")
 
-ADMIN_USERNAME = "admin"
+ADMIN_USERNAME = (os.getenv("ADMIN_USERNAME", "admin") or "admin").strip()
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
 ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", "")
 
