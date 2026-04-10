@@ -8,6 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <style>
@@ -105,21 +106,38 @@
     }
     .lp-btn-outline:hover { border-color: var(--border-light); background: var(--surface-3); }
 
-    /* ── Hero ────────────────────────────────────────────────── */
+    /* ── Hero (fundo: mapa / geolocalização + vinheta para leitura) ── */
     .lp-hero {
+      --lp-hero-map: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1920&q=80');
+      position: relative;
+      isolation: isolate;
       min-height: calc(100vh - 58px);
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       padding: 80px 24px 120px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .lp-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
       background:
-        radial-gradient(ellipse 70% 45% at 50% -5%, rgba(59, 130, 246, 0.1) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 35% at 85% 95%, rgba(100, 110, 200, 0.06) 0%, transparent 60%),
-        var(--bg);
+        radial-gradient(ellipse 90% 70% at 50% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 55%),
+        linear-gradient(165deg, rgba(14, 17, 23, 0.88) 0%, rgba(14, 17, 23, 0.78) 35%, rgba(14, 17, 23, 0.92) 70%, rgba(14, 17, 23, 0.97) 100%),
+        var(--lp-hero-map);
+      background-size: auto, auto, cover;
+      background-position: center, center, center 35%;
+      background-repeat: no-repeat;
     }
 
     .lp-hero-inner {
+      position: relative;
+      z-index: 1;
       max-width: 700px;
     }
 
@@ -153,6 +171,7 @@
       line-height: 1.15;
       letter-spacing: -0.03em;
       margin-bottom: 20px;
+      text-shadow: 0 2px 28px rgba(0, 0, 0, 0.55);
     }
 
     .lp-hero-title em {
@@ -166,6 +185,7 @@
       line-height: 1.7;
       max-width: 500px;
       margin: 0 auto 40px;
+      text-shadow: 0 1px 16px rgba(0, 0, 0, 0.5);
     }
 
     .lp-hero-actions {
