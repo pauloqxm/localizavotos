@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalizaVotos &mdash; Dados Eleitorais Georreferenciados</title>
+  <meta name="description" content="Acesse informações eleitorais detalhadas mapeadas por região. Visualize tendências, analise padrões de votação e tome decisões estratégicas baseadas em dados.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    html { scroll-behavior: smooth; }
+
+    /* ── Navbar ──────────────────────────────────────────────── */
+    .lp-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14, 17, 23, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .lp-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .lp-brand-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .lp-brand-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .lp-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      list-style: none;
+    }
+
+    .lp-nav-links a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 7px;
+      text-decoration: none;
+      transition: color var(--transition), background var(--transition);
+    }
+
+    .lp-nav-links a:hover,
+    .lp-nav-links a.active {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .lp-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .lp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      text-decoration: none;
+      border: none;
+    }
+
+    .lp-btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .lp-btn-ghost:hover { color: var(--text); border-color: var(--border-light); background: var(--surface-2); }
+
+    .lp-btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .lp-btn-primary:hover { background: var(--accent-hover); }
+
+    .lp-btn-outline {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .lp-btn-outline:hover { border-color: var(--border-light); background: var(--surface-3); }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .lp-hero {
+      min-height: calc(100vh - 58px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 120px;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% -5%, rgba(230, 57, 70, 0.09) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 35% at 85% 95%, rgba(100, 110, 200, 0.06) 0%, transparent 60%),
+        var(--bg);
+    }
+
+    .lp-hero-inner {
+      max-width: 700px;
+    }
+
+    .lp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .lp-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .lp-hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+
+    .lp-hero-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .lp-hero-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 500px;
+      margin: 0 auto 40px;
+    }
+
+    .lp-hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .lp-hero-actions .lp-btn {
+      padding: 12px 28px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Features ────────────────────────────────────────────── */
+    .lp-features {
+      padding: 80px 24px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .lp-section-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .lp-section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .lp-section-title {
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .lp-section-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 440px;
+      margin: 0 auto 52px;
+      line-height: 1.65;
+    }
+
+    .lp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .lp-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 22px;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .lp-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .lp-card-icon {
+      width: 42px;
+      height: 42px;
+      background: var(--accent-muted);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .lp-card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .lp-card-desc {
+      font-size: 0.845rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── CTA ─────────────────────────────────────────────────── */
+    .lp-cta-section {
+      padding: 80px 24px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .lp-cta-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 60px 40px;
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lp-cta-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 280px;
+      height: 280px;
+      background: var(--accent-muted);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(40px);
+    }
+
+    .lp-cta-card::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: -5%;
+      width: 200px;
+      height: 200px;
+      background: rgba(100, 110, 200, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(30px);
+    }
+
+    .lp-cta-badge {
+      display: inline-block;
+      background: var(--accent-muted);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(230, 57, 70, 0.2);
+    }
+
+    .lp-cta-title {
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .lp-cta-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.65;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+    }
+
+    .lp-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 13px 32px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      text-decoration: none;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 20px rgba(0,0,0,.35);
+      position: relative;
+    }
+
+    .lp-cta-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(0,0,0,.4);
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .lp-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .lp-footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .lp-footer-icon {
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .lp-footer-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .lp-footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Responsividade ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .lp-grid { grid-template-columns: 1fr; }
+      .lp-nav-links { display: none; }
+      .lp-hero { padding: 60px 20px 80px; }
+      .lp-cta-card { padding: 40px 24px; }
+      .lp-footer { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+      .lp-nav-actions .lp-btn-ghost { display: none; }
+      .lp-hero-actions { flex-direction: column; align-items: stretch; }
+      .lp-hero-actions .lp-btn { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────── -->
+  <nav class="lp-navbar">
+    <a href="/" class="lp-brand">
+      <div class="lp-brand-icon">📍</div>
+      <span class="lp-brand-text">Localiza Votos</span>
+    </a>
+
+    <ul class="lp-nav-links">
+      <li><a href="/" class="active">Início</a></li>
+      <li><a href="#recursos">Recursos</a></li>
+    </ul>
+
+    <div class="lp-nav-actions">
+      <a href="/login.html" class="lp-btn lp-btn-ghost">Login</a>
+      <a href="/admin.html" class="lp-btn lp-btn-primary" id="painelBtn">Painel Admin</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────────────────── -->
+  <section class="lp-hero">
+    <div class="lp-hero-inner">
+      <div class="lp-badge">
+        <span class="lp-badge-dot"></span>
+        Dados eleitorais precisos e confiáveis
+      </div>
+
+      <h1 class="lp-hero-title">
+        Dados eleitorais<br>
+        <em>georreferenciados</em><br>
+        para políticos
+      </h1>
+
+      <p class="lp-hero-subtitle">
+        Acesse informações eleitorais detalhadas mapeadas por região.
+        Visualize tendências, analise padrões de votação e tome decisões
+        estratégicas baseadas em dados.
+      </p>
+
+      <div class="lp-hero-actions">
+        <a href="/login.html" class="lp-btn lp-btn-primary" id="heroMainBtn">
+          Acessar Plataforma
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/admin.html" class="lp-btn lp-btn-outline">
+          Painel Administrativo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Recursos ─────────────────────────────────────────────────────── -->
+  <section class="lp-features" id="recursos">
+    <div class="lp-section-inner">
+      <p class="lp-section-label">Funcionalidades</p>
+      <h2 class="lp-section-title">Tudo que você precisa para vencer</h2>
+      <p class="lp-section-subtitle">
+        Ferramentas poderosas de análise eleitoral reunidas em uma plataforma intuitiva.
+      </p>
+
+      <div class="lp-grid">
+        <div class="lp-card">
+          <div class="lp-card-icon">🗺️</div>
+          <h3 class="lp-card-title">Mapas Interativos</h3>
+          <p class="lp-card-desc">Visualize votos por local, bairro e município com camadas geoespaciais detalhadas e filtros dinâmicos.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">📊</div>
+          <h3 class="lp-card-title">Gráficos e Análises</h3>
+          <p class="lp-card-desc">Painéis com gráficos de barras, rankings e distribuições para identificar padrões de votação rapidamente.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">📍</div>
+          <h3 class="lp-card-title">Georreferenciamento</h3>
+          <p class="lp-card-desc">Dados vinculados a coordenadas geográficas precisas, permitindo análise espacial por seção e zona eleitoral.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">🔒</div>
+          <h3 class="lp-card-title">Acesso Seguro</h3>
+          <p class="lp-card-desc">Cada candidato acessa apenas seus próprios dados com autenticação JWT e controle de acesso granular.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">📱</div>
+          <h3 class="lp-card-title">Responsivo</h3>
+          <p class="lp-card-desc">Acesse do computador, tablet ou celular com a mesma experiência fluida e otimizada para qualquer tela.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">⚡</div>
+          <h3 class="lp-card-title">Dados em Tempo Real</h3>
+          <p class="lp-card-desc">Atualizações rápidas de dados geoespaciais com carregamento otimizado para grandes volumes de informação.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ────────────────────────────────────────────────────────── -->
+  <section class="lp-cta-section">
+    <div class="lp-cta-card">
+      <span class="lp-cta-badge">Comece agora</span>
+      <h2 class="lp-cta-title">Pronto para começar?</h2>
+      <p class="lp-cta-desc">
+        Acesse a plataforma agora e tenha em mãos todos os dados eleitorais
+        que você precisa para sua campanha.
+      </p>
+      <a href="/login.html" class="lp-cta-btn" id="ctaBtn">
+        Entrar no sistema
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Footer ────────────────────────────────────────────────────── -->
+  <footer class="lp-footer">
+    <a href="/" class="lp-footer-brand">
+      <div class="lp-footer-icon">📍</div>
+      <span class="lp-footer-name">LocalizaVotos</span>
+    </a>
+    <span class="lp-footer-copy">© 2026 LocalizaVotos. Todos os direitos reservados.</span>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    (function () {
+      const token = localStorage.getItem('lv_token');
+      const role  = localStorage.getItem('lv_role');
+      if (token) {
+        const dest = role === 'admin' ? '/admin.html' : '/dashboard.html';
+        const label = 'Ir para o Painel';
+        const heroBtn   = document.getElementById('heroMainBtn');
+        const painelBtn = document.getElementById('painelBtn');
+        const ctaBtn    = document.getElementById('ctaBtn');
+        if (heroBtn)   { heroBtn.textContent   = label; heroBtn.href   = dest; }
+        if (painelBtn) { painelBtn.textContent = label; painelBtn.href = dest; }
+        if (ctaBtn)    { ctaBtn.textContent    = label; ctaBtn.href    = dest; }
+      }
+    })();
+  </script>
+
+</body>
+</html>

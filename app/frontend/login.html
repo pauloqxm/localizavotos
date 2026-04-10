@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalizaVotos &mdash; Login</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-bg">
+    <div class="auth-card">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📍</div>
+        <div class="auth-logo-text">Localiza<span>Votos</span></div>
+      </div>
+      <p class="auth-subtitle">Plataforma de Análise Eleitoral</p>
+
+      <h2 class="auth-heading">Acesse seu painel</h2>
+
+      <!-- Formulário -->
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="username">Usuário</label>
+          <input
+            class="form-input input-hint"
+            type="text"
+            id="username"
+            name="username"
+            value="Seu usuário"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Senha</label>
+          <input
+            class="form-input input-hint"
+            type="text"
+            id="password"
+            name="password"
+            value="Sua senha"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div class="alert alert-error" id="errorMsg" role="alert"></div>
+
+        <button class="btn btn-primary" type="submit" id="loginBtn">
+          <span class="btn-text">Entrar</span>
+          <span class="btn-spinner"></span>
+        </button>
+      </form>
+
+      <!-- Links auxiliares -->
+      <div class="auth-footer">
+        <a href="/forgot-password.html">Esqueci minha senha</a>
+        <a href="/">← Voltar ao início</a>
+      </div>
+
+      <!-- Seletor de cor do tema -->
+      <div class="theme-picker">
+        <span class="theme-picker-label">Cor do tema</span>
+        <div class="theme-dots">
+          <button class="theme-dot" data-theme="vermelho"    style="--dot-color:#e63946" title="Vermelho"></button>
+          <button class="theme-dot" data-theme="azul"        style="--dot-color:#3b82f6" title="Azul"></button>
+          <button class="theme-dot" data-theme="verde"       style="--dot-color:#22c55e" title="Verde"></button>
+          <button class="theme-dot" data-theme="amarelo"     style="--dot-color:#f59e0b" title="Amarelo"></button>
+          <button class="theme-dot" data-theme="lilas"       style="--dot-color:#a855f7" title="Lilás"></button>
+          <button class="theme-dot" data-theme="ceu"         style="--dot-color:#69c4ed" title="Céu"></button>
+          <button class="theme-dot" data-theme="carmim"      style="--dot-color:#c51328" title="Carmim"></button>
+          <button class="theme-dot" data-theme="verdeescuro" style="--dot-color:#1a9b32" title="Verde escuro"></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

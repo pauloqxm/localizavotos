@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalizaVotos &mdash; Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Layout ────────────────────────────────────────────── */
+    .admin-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    /* ── Navbar ─────────────────────────────────────────────── */
+    .adm-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .adm-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .adm-nav-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .adm-nav-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .adm-nav-title span { color: var(--accent); }
+
+    .adm-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .adm-nav-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--accent-muted);
+      color: var(--accent);
+      border: 1px solid rgba(230,57,70,.2);
+      border-radius: 99px;
+      padding: 3px 10px;
+    }
+
+    .adm-nav-user {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Main ────────────────────────────────────────────────── */
+    .adm-main {
+      flex: 1;
+      padding: 28px 24px;
+      max-width: 1060px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Page header ─────────────────────────────────────────── */
+    .adm-page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .adm-page-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .adm-page-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Hash generator card ─────────────────────────────────── */
+    .adm-hash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 28px;
+    }
+
+    .adm-hash-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .adm-hash-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--accent-muted);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .adm-hash-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .adm-hash-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .adm-hash-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .adm-field-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .adm-input-wrap {
+      position: relative;
+    }
+
+    .adm-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 38px 9px 12px;
+      color: var(--text);
+      font-size: 0.875rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .adm-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-muted);
+    }
+
+    .adm-input-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 2px;
+      line-height: 1;
+      font-size: 15px;
+      transition: color var(--transition);
+    }
+
+    .adm-input-toggle:hover { color: var(--text-muted); }
+
+    .adm-hash-result {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 38px 9px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      word-break: break-all;
+      min-height: 38px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .adm-hash-empty {
+      color: var(--text-dim);
+      font-family: var(--font);
+      font-size: 0.8rem;
+    }
+
+    .adm-copy-btn {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 3px 6px;
+      font-size: 11px;
+      font-family: var(--font);
+      font-weight: 600;
+      transition: all var(--transition);
+    }
+
+    .adm-copy-btn:hover { background: var(--accent-muted); color: var(--accent); border-color: var(--accent); }
+
+    .adm-python-snippet {
+      margin-top: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .adm-python-snippet .py-kw  { color: #c792ea; }
+    .adm-python-snippet .py-fn  { color: #82aaff; }
+    .adm-python-snippet .py-str { color: #c3e88d; }
+    .adm-python-snippet .py-val { color: var(--accent); font-weight: 600; }
+    .adm-python-snippet .py-cmt { color: var(--text-dim); }
+
+    /* ── Candidatos section ──────────────────────────────────── */
+    .adm-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .adm-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .adm-section-count {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+    }
+
+    /* ── Candidatos grid ─────────────────────────────────────── */
+    .adm-candidates-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .adm-cand-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+      transition: border-color var(--transition);
+    }
+
+    .adm-cand-card:hover { border-color: var(--border-light); }
+
+    .adm-cand-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .adm-cand-info { min-width: 0; }
+
+    .adm-cand-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .adm-cand-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .adm-cand-slug {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: 'Courier New', monospace;
+      background: var(--surface-2);
+      border-radius: 4px;
+      padding: 1px 7px;
+      border: 1px solid var(--border);
+    }
+
+    .adm-cand-email {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .adm-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 99px;
+      padding: 3px 9px;
+      flex-shrink: 0;
+    }
+
+    .adm-status-ok {
+      background: var(--success-muted);
+      color: var(--success);
+      border: 1px solid rgba(45,201,55,.25);
+    }
+
+    .adm-status-warn {
+      background: rgba(243,156,18,.1);
+      color: var(--warning);
+      border: 1px solid rgba(243,156,18,.25);
+    }
+
+    .adm-cand-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .adm-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--radius-xs);
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+
+    .adm-btn:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-light); }
+
+    .adm-btn-accent {
+      background: var(--accent-muted);
+      color: var(--accent);
+      border-color: rgba(230,57,70,.25);
+    }
+
+    .adm-btn-accent:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Modal ───────────────────────────────────────────────── */
+    .adm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(3px);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .adm-overlay.open { display: flex; }
+
+    .adm-modal {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .adm-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .adm-modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .adm-modal-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .adm-modal-close {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: all var(--transition);
+    }
+
+    .adm-modal-close:hover { background: var(--surface-3); color: var(--text); }
+
+    .adm-form-group { margin-bottom: 16px; }
+
+    .adm-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .adm-modal-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 18px 0;
+    }
+
+    .adm-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .adm-btn-save {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .adm-btn-save:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
+
+    .adm-modal-hash-preview {
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      word-break: break-all;
+      margin-top: 8px;
+      min-height: 36px;
+      line-height: 1.6;
+    }
+
+    .adm-modal-hash-empty {
+      color: var(--text-dim);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-style: italic;
+    }
+
+    /* ── Alert banner ────────────────────────────────────────── */
+    .adm-alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      display: none;
+      margin-top: 12px;
+    }
+
+    .adm-alert.show { display: block; }
+    .adm-alert-success { background: var(--success-muted); border: 1px solid rgba(45,201,55,.35); color: #5edd67; }
+    .adm-alert-error   { background: var(--accent-muted);  border: 1px solid rgba(230,57,70,.35);  color: #ff7b84; }
+
+    /* ── Empty state ─────────────────────────────────────────── */
+    .adm-empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .adm-empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+    /* ── Spinner ─────────────────────────────────────────────── */
+    .adm-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 40px auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsivo ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .adm-cand-card { grid-template-columns: auto 1fr; }
+      .adm-cand-actions { grid-column: 1 / -1; justify-content: flex-start; }
+      .adm-hash-row { grid-template-columns: 1fr; }
+      .adm-form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <!-- ── Navbar ────────────────────────────────────────────────────── -->
+  <nav class="adm-nav">
+    <a href="/" class="adm-nav-brand">
+      <div class="adm-nav-logo">📍</div>
+      <span class="adm-nav-title">Localiza<span>Votos</span></span>
+    </a>
+    <div class="adm-nav-right">
+      <span class="adm-nav-badge">Admin</span>
+      <span class="adm-nav-user" id="navUser"></span>
+      <a href="/dashboard.html" class="adm-btn" style="text-decoration:none">Dashboard</a>
+      <button class="adm-btn adm-btn-accent" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+
+  <!-- ── Main ──────────────────────────────────────────────────────── -->
+  <main class="adm-main">
+
+    <!-- Page header -->
+    <div class="adm-page-header">
+      <div>
+        <h1 class="adm-page-title">Painel Administrativo</h1>
+        <p class="adm-page-subtitle">Gerencie candidatos, senhas e credenciais de acesso</p>
+      </div>
+    </div>
+
+    <!-- ── Gerador de Hash SHA-256 ────────────────────────────────── -->
+    <div class="adm-hash-card">
+      <div class="adm-hash-header">
+        <div class="adm-hash-icon">🔐</div>
+        <div>
+          <div class="adm-hash-title">Gerador de Hash SHA-256</div>
+          <div class="adm-hash-subtitle">Digite uma senha para gerar o hash que será salvo no credentials.json</div>
+        </div>
+      </div>
+
+      <div class="adm-hash-row">
+        <div>
+          <div class="adm-field-label">Senha</div>
+          <div class="adm-input-wrap">
+            <input class="adm-input" type="password" id="hashInput" placeholder="Digite a senha…" autocomplete="off">
+            <button class="adm-input-toggle" onclick="toggleHashVis()" id="hashToggle" title="Mostrar/ocultar">👁</button>
+          </div>
+        </div>
+        <div>
+          <div class="adm-field-label">Hash SHA-256 gerado</div>
+          <div class="adm-hash-result" id="hashResult">
+            <span class="adm-hash-empty">O hash aparecerá aqui…</span>
+            <button class="adm-copy-btn" id="hashCopyBtn" style="display:none" onclick="copyHash()">Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snippet Python -->
+      <div class="adm-python-snippet">
+        <span class="py-cmt"># Python — como gerar o hash manualmente:</span><br>
+        <span class="py-kw">import</span> hashlib<br>
+        hash_val = hashlib.<span class="py-fn">sha256</span>(<span class="py-str" id="pyStr">"sua_senha"</span>.<span class="py-fn">encode</span>()).<span class="py-fn">hexdigest</span>()<br>
+        <span class="py-cmt"># resultado → </span><span class="py-val" id="pyResult">…</span>
+      </div>
+    </div>
+
+    <!-- ── Lista de Candidatos ────────────────────────────────────── -->
+    <div class="adm-section-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="adm-section-title">Candidatos cadastrados</span>
+        <span class="adm-section-count" id="candCount">—</span>
+      </div>
+      <button class="adm-btn" onclick="loadCandidates()">↺ Atualizar</button>
+    </div>
+
+    <div id="candidatesList">
+      <div class="adm-spinner"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Modal de Edição ─────────────────────────────────────────────── -->
+<div class="adm-overlay" id="editOverlay">
+  <div class="adm-modal">
+    <div class="adm-modal-header">
+      <div>
+        <div class="adm-modal-title" id="modalTitle">Editar Candidato</div>
+        <div class="adm-modal-subtitle" id="modalSlug"></div>
+      </div>
+      <button class="adm-modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="adm-form-row">
+      <div class="adm-form-group">
+        <div class="adm-field-label">Nome de exibição</div>
+        <input class="adm-input" type="text" id="modalName" placeholder="Ex: João Silva">
+      </div>
+      <div class="adm-form-group">
+        <div class="adm-field-label">E-mail</div>
+        <input class="adm-input" type="email" id="modalEmail" placeholder="email@exemplo.com">
+      </div>
+    </div>
+
+    <hr class="adm-modal-divider">
+
+    <div class="adm-form-group">
+      <div class="adm-field-label">Nova senha</div>
+      <div class="adm-input-wrap">
+        <input class="adm-input" type="password" id="modalPassword" placeholder="Digite a nova senha…" autocomplete="new-password">
+        <button class="adm-input-toggle" onclick="toggleModalVis()" title="Mostrar/ocultar">👁</button>
+      </div>
+    </div>
+
+    <div class="adm-form-group">
+      <div class="adm-field-label">Hash SHA-256 gerado</div>
+      <div class="adm-modal-hash-preview" id="modalHashPreview">
+        <span class="adm-modal-hash-empty">Digite a senha acima para gerar o hash…</span>
+      </div>
+    </div>
+
+    <div id="modalAlert" class="adm-alert"></div>
+
+    <div class="adm-modal-footer">
+      <button class="adm-btn" onclick="closeModal()">Cancelar</button>
+      <button class="adm-btn adm-btn-save" id="modalSaveBtn" onclick="saveCredentials()">
+        <span id="modalSaveText">Salvar</span>
+        <span id="modalSaveSpinner" style="display:none">…</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/theme.js"></script>
+<script>
+'use strict';
+
+const API   = '';
+const TOKEN = localStorage.getItem('lv_token');
+const ROLE  = localStorage.getItem('lv_role');
+
+// ── Autenticação ──────────────────────────────────────────────────────────
+if (!TOKEN || ROLE !== 'admin') {
+  window.location.href = '/login.html';
+}
+
+document.getElementById('navUser').textContent = localStorage.getItem('lv_display_name') || 'Admin';
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '/';
+}
+
+// ── SHA-256 via SubtleCrypto (nativo, sem dependência) ───────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Gerador de hash (topo da página) ─────────────────────────────────────
+const hashInput    = document.getElementById('hashInput');
+const hashResult   = document.getElementById('hashResult');
+const hashCopyBtn  = document.getElementById('hashCopyBtn');
+const pyStr        = document.getElementById('pyStr');
+const pyResult     = document.getElementById('pyResult');
+
+hashInput.addEventListener('input', async () => {
+  const val = hashInput.value;
+  if (!val) {
+    hashResult.innerHTML = '<span class="adm-hash-empty">O hash aparecerá aqui…</span>';
+    hashCopyBtn.style.display = 'none';
+    pyStr.textContent    = '"sua_senha"';
+    pyResult.textContent = '…';
+    return;
+  }
+  const h = await sha256(val);
+  hashResult.innerHTML = '';
+  hashResult.appendChild(document.createTextNode(h));
+  hashCopyBtn.style.display = '';
+  hashResult.appendChild(hashCopyBtn);
+  pyStr.textContent    = `"${val}"`;
+  pyResult.textContent = h;
+});
+
+function toggleHashVis() {
+  hashInput.type = hashInput.type === 'password' ? 'text' : 'password';
+}
+
+function copyHash() {
+  const h = hashInput.value ? pyResult.textContent : '';
+  if (!h || h === '…') return;
+  navigator.clipboard.writeText(h).then(() => {
+    hashCopyBtn.textContent = '✓ Copiado';
+    setTimeout(() => { hashCopyBtn.textContent = 'Copiar'; }, 1800);
+  });
+}
+
+// ── Carregar candidatos ───────────────────────────────────────────────────
+async function loadCandidates() {
+  const list = document.getElementById('candidatesList');
+  list.innerHTML = '<div class="adm-spinner"></div>';
+
+  try {
+    const res = await fetch(`${API}/api/admin/candidatos-full`, {
+      headers: { 'Authorization': `Bearer ${TOKEN}` }
+    });
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+      return;
+    }
+    const data = await res.json();
+    renderCandidates(data);
+  } catch (e) {
+    list.innerHTML = `<div class="adm-empty"><div class="adm-empty-icon">⚠️</div><p>Erro ao carregar candidatos.<br>${e.message}</p></div>`;
+  }
+}
+
+function renderCandidates(data) {
+  const list  = document.getElementById('candidatesList');
+  const count = document.getElementById('candCount');
+  count.textContent = `${data.length} encontrado${data.length !== 1 ? 's' : ''}`;
+
+  if (!data.length) {
+    list.innerHTML = `<div class="adm-empty"><div class="adm-empty-icon">📂</div><p>Nenhuma pasta de candidato encontrada.</p></div>`;
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'adm-candidates-grid';
+
+  data.forEach(c => {
+    const hasPwd  = c.has_password;
+    const hasCred = c.has_credentials;
+    const bases   = c.bases.length ? c.bases.join(', ') : '—';
+
+    const statusHtml = hasPwd
+      ? `<span class="adm-status-pill adm-status-ok">● Senha definida</span>`
+      : `<span class="adm-status-pill adm-status-warn">⚠ Sem senha</span>`;
+
+    const card = document.createElement('div');
+    card.className = 'adm-cand-card';
+    card.innerHTML = `
+      <div class="adm-cand-avatar">🗳️</div>
+      <div class="adm-cand-info">
+        <div class="adm-cand-name">${escHtml(c.display_name)}</div>
+        <div class="adm-cand-meta">
+          <span class="adm-cand-slug">${escHtml(c.slug)}</span>
+          ${c.email ? `<span class="adm-cand-email">${escHtml(c.email)}</span>` : ''}
+          ${statusHtml}
+        </div>
+        <div style="margin-top:4px;font-size:0.72rem;color:var(--text-dim)">Bases: ${escHtml(bases)}</div>
+      </div>
+      <div class="adm-cand-actions">
+        <button class="adm-btn adm-btn-accent" onclick="openModal('${escAttr(c.slug)}','${escAttr(c.display_name)}','${escAttr(c.email)}')">
+          ✏ Editar / Senha
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  list.innerHTML = '';
+  list.appendChild(grid);
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+let _currentSlug = '';
+
+function openModal(slug, name, email) {
+  _currentSlug = slug;
+  document.getElementById('modalTitle').textContent   = `Editar: ${name}`;
+  document.getElementById('modalSlug').textContent    = `pasta: ${slug}`;
+  document.getElementById('modalName').value          = name;
+  document.getElementById('modalEmail').value         = email;
+  document.getElementById('modalPassword').value      = '';
+  document.getElementById('modalHashPreview').innerHTML = '<span class="adm-modal-hash-empty">Digite a senha acima para gerar o hash…</span>';
+  hideModalAlert();
+  document.getElementById('editOverlay').classList.add('open');
+  document.getElementById('modalName').focus();
+}
+
+function closeModal() {
+  document.getElementById('editOverlay').classList.remove('open');
+  _currentSlug = '';
+}
+
+document.getElementById('editOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Hash em tempo real no modal
+document.getElementById('modalPassword').addEventListener('input', async () => {
+  const val     = document.getElementById('modalPassword').value;
+  const preview = document.getElementById('modalHashPreview');
+  if (!val) {
+    preview.innerHTML = '<span class="adm-modal-hash-empty">Digite a senha acima para gerar o hash…</span>';
+    return;
+  }
+  const h = await sha256(val);
+  preview.textContent = h;
+});
+
+function toggleModalVis() {
+  const el = document.getElementById('modalPassword');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function showModalAlert(msg, type) {
+  const el = document.getElementById('modalAlert');
+  el.textContent = msg;
+  el.className   = `adm-alert adm-alert-${type} show`;
+}
+
+function hideModalAlert() {
+  document.getElementById('modalAlert').className = 'adm-alert';
+}
+
+async function saveCredentials() {
+  if (!_currentSlug) return;
+
+  const name  = document.getElementById('modalName').value.trim();
+  const email = document.getElementById('modalEmail').value.trim();
+  const pwd   = document.getElementById('modalPassword').value;
+
+  if (!name) { showModalAlert('O nome de exibição é obrigatório.', 'error'); return; }
+
+  const body = { display_name: name, email: email };
+  if (pwd) {
+    body.password_hash = await sha256(pwd);
+  }
+
+  const saveBtn    = document.getElementById('modalSaveBtn');
+  const saveText   = document.getElementById('modalSaveText');
+  const saveSpinner = document.getElementById('modalSaveSpinner');
+  saveBtn.disabled  = true;
+  saveText.style.display    = 'none';
+  saveSpinner.style.display = '';
+  hideModalAlert();
+
+  try {
+    const res = await fetch(`${API}/api/admin/candidato/${_currentSlug}/credentials`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showModalAlert(data.detail || 'Erro ao salvar.', 'error');
+      return;
+    }
+    showModalAlert('✓ Credenciais salvas com sucesso!', 'success');
+    setTimeout(() => { closeModal(); loadCandidates(); }, 1200);
+  } catch (e) {
+    showModalAlert('Erro de conexão: ' + e.message, 'error');
+  } finally {
+    saveBtn.disabled         = false;
+    saveText.style.display   = '';
+    saveSpinner.style.display = 'none';
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escAttr(s) {
+  return String(s ?? '').replace(/'/g, "\\'");
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+loadCandidates();
+</script>
+</body>
+</html>

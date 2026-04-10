@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalizaVotos &mdash; Painel</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Filtros">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="nav-logo-icon">📍</div>
+      <span class="nav-logo-text">Localiza<span>Votos</span></span>
+    </div>
+    <span class="nav-candidate" id="navCandidate">Carregando&hellip;</span>
+    <a id="adminPanelLink" href="/admin.html" class="btn btn-ghost" style="display:none;text-decoration:none">⚙ Admin</a>
+    <button class="btn btn-ghost" onclick="logout()">Sair</button>
+  </nav>
+
+  <!-- ===== Layout principal ===== -->
+  <div class="main-layout">
+
+    <!-- Overlay mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar-close-btn" id="sidebarClose" aria-label="Fechar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Base de votos</div>
+        <select class="sidebar-select" id="baseSelect">
+          <option value="">Carregando&hellip;</option>
+        </select>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Município</div>
+        <select class="sidebar-select" id="municipeFilter">
+          <option value="">Todos os municípios</option>
+        </select>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Votos mínimos</div>
+        <div class="range-wrapper">
+          <div class="range-label-row">
+            <span>0</span>
+            <span class="range-value" id="minVotesLabel">0</span>
+          </div>
+          <input type="range" id="minVotesRange" min="0" max="500" value="0" step="1">
+        </div>
+      </div>
+
+      <!-- Fundo do mapa -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">Fundo do mapa</div>
+        <div class="tile-btns">
+          <button class="tile-btn active" data-tile="dark">Escuro</button>
+          <button class="tile-btn" data-tile="light">Claro</button>
+          <button class="tile-btn" data-tile="satellite">Satélite</button>
+          <button class="tile-btn" data-tile="osm">OSM</button>
+        </div>
+      </div>
+
+      <!-- Camadas extras -->
+      <div class="sidebar-section" id="layersSection" style="display:none">
+        <div class="sidebar-label">Camadas</div>
+        <div class="layer-list" id="layerList"></div>
+      </div>
+
+    </aside>
+
+    <!-- ===== Área central ===== -->
+    <div class="content-area">
+
+      <!-- KPIs (sempre visíveis) -->
+      <div class="kpi-bar">
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiVotos">&mdash;</div>
+          <div class="kpi-label">Total de votos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiLocais">&mdash;</div>
+          <div class="kpi-label">Locais de votação</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiMunicipios">&mdash;</div>
+          <div class="kpi-label">Municípios</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiTopVotos">&mdash;</div>
+          <div class="kpi-label">Melhor local</div>
+          <div class="kpi-sub" id="kpiTopName">&mdash;</div>
+        </div>
+      </div>
+
+      <!-- Abas -->
+      <div class="content-tabs">
+        <button class="tab-btn active" data-tab="mapa">🗺️ Mapa</button>
+        <button class="tab-btn" data-tab="analises">📊 Análises</button>
+        <button class="tab-btn" data-tab="tabela">📄 Tabela</button>
+      </div>
+
+      <!-- ── Painel Mapa ── -->
+      <div class="tab-panel active" id="panel-mapa">
+        <div class="map-container" id="mapContainer">
+          <div id="map"></div>
+          <button class="map-fullscreen-btn" id="mapFullscreenBtn" title="Tela cheia">
+            <svg id="fsIconExpand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            <svg id="fsIconCompress" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none"><path d="M8 3v5H3"/><path d="M21 8h-5V3"/><path d="M3 16h5v5"/><path d="M16 21v-5h5"/></svg>
+          </button>
+          <div class="map-loading" id="mapLoading">
+            <div class="spinner"></div>
+            <p>Carregando dados&hellip;</p>
+          </div>
+          <div class="map-legend" id="mapLegend">
+            <div class="map-legend-title">Votos por local</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#2dc937"></span>1&ndash;15</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f1c40f"></span>16&ndash;40</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#e67e22"></span>41&ndash;80</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#e74c3c"></span>81&ndash;150</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#8e1a1a"></span>150+</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Painel Análises ── -->
+      <div class="tab-panel" id="panel-analises">
+        <div class="charts-area" id="chartsArea">
+          <div class="charts-empty" id="chartsEmpty">
+            <p>Carregue uma base de votos para ver as análises.</p>
+          </div>
+
+          <!-- Vista local -->
+          <div id="chartsLocal" style="display:none">
+            <div class="charts-grid-2">
+              <div class="chart-card">
+                <div class="chart-title">🏆 Top 15 locais com mais votos</div>
+                <div class="chart-wrap" id="wrap-chartTopLocais">
+                  <canvas id="chartTopLocais"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">📉 15 locais com menos votos</div>
+                <div class="chart-wrap" id="wrap-chartBottomLocais">
+                  <canvas id="chartBottomLocais"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="charts-grid-2">
+              <div class="chart-card">
+                <div class="chart-title">🏘 Top bairros / distritos</div>
+                <div class="chart-wrap" id="wrap-chartBairros">
+                  <canvas id="chartBairros"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">📊 Distribuição por faixa de votos</div>
+                <div class="chart-wrap" id="wrap-chartFaixa" style="height:220px">
+                  <canvas id="chartFaixa"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="charts-grid-2">
+              <div class="chart-card">
+                <div class="chart-title">🎯 Concentração de votos (Curva de Pareto)</div>
+                <div class="chart-caption">Linha vermelha = 80% dos votos acumulados</div>
+                <div class="chart-wrap" id="wrap-chartPareto" style="height:250px">
+                  <canvas id="chartPareto"></canvas>
+                </div>
+              </div>
+              <div class="chart-card" id="cardZona">
+                <div class="chart-title">🗳️ Votos por zona eleitoral</div>
+                <div class="chart-wrap" id="wrap-chartZona" style="height:250px">
+                  <canvas id="chartZona"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista municípios -->
+          <div id="chartsMunicipios" style="display:none">
+            <div class="charts-grid-2">
+              <div class="chart-card">
+                <div class="chart-title">🏆 Top 15 municípios com mais votos</div>
+                <div class="chart-wrap" id="wrap-chartTopMun">
+                  <canvas id="chartTopMun"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-title">📉 15 municípios com menos votos</div>
+                <div class="chart-wrap" id="wrap-chartBottomMun">
+                  <canvas id="chartBottomMun"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Painel Tabela ── -->
+      <div class="tab-panel" id="panel-tabela">
+        <div class="table-area">
+          <div class="table-toolbar">
+            <span id="tableCount" style="color:var(--text-muted);font-size:.875rem"></span>
+            <button class="btn btn-ghost" id="downloadCsv" style="padding:6px 16px;font-size:.85rem">
+              &#8203;⬇ Baixar CSV
+            </button>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="dataTable">
+              <thead><tr id="tableHead"></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.content-area -->
+  </div><!-- /.main-layout -->
+</div><!-- /.dashboard -->
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- Tema -->
+<script src="/js/theme.js"></script>
+
+<!-- Dashboard -->
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
