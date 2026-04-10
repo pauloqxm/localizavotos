@@ -389,45 +389,180 @@
       box-shadow: 0 6px 28px rgba(0,0,0,.4);
     }
 
-    /* ── Footer ──────────────────────────────────────────────── */
+    /* ── Footer (tema claro, layout em colunas) ───────────────── */
     .lp-footer {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 24px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
+      --lp-ft-bg: #f0f2f5;
+      --lp-ft-border: #e2e5eb;
+      --lp-ft-text: #1a1d26;
+      --lp-ft-muted: #5c6378;
+      --lp-ft-link: #4b5568;
+      background: var(--lp-ft-bg);
+      border-top: 1px solid var(--lp-ft-border);
+      color: var(--lp-ft-text);
+      padding: 48px 28px 0;
+      font-family: var(--font);
     }
 
-    .lp-footer-brand {
-      display: flex;
+    .lp-footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .lp-footer-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr 1fr;
+      gap: 40px 32px;
+      padding-bottom: 36px;
+    }
+
+    .lp-footer-brand-row {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       text-decoration: none;
+      margin-bottom: 12px;
     }
 
-    .lp-footer-icon {
-      width: 22px;
-      height: 22px;
+    .lp-footer-logo-box {
+      width: 40px;
+      height: 40px;
       background: var(--accent);
-      border-radius: 5px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
     }
 
-    .lp-footer-name {
+    .lp-footer-logo-box svg {
+      width: 22px;
+      height: 22px;
+      color: #fff;
+    }
+
+    .lp-footer-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--lp-ft-text);
+      letter-spacing: -0.02em;
+    }
+
+    .lp-footer-tagline {
       font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--text);
+      line-height: 1.55;
+      color: var(--lp-ft-muted);
+      max-width: 300px;
+      margin: 0;
     }
 
-    .lp-footer-copy {
-      font-size: 0.78rem;
-      color: var(--text-dim);
+    .lp-footer-heading {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--lp-ft-text);
+      margin: 0 0 14px;
+    }
+
+    .lp-footer-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lp-footer-links a {
+      color: var(--lp-ft-link);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .lp-footer-links a:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .lp-footer-contact {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .lp-footer-contact li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--lp-ft-link);
+      line-height: 1.4;
+    }
+
+    .lp-footer-contact a {
+      color: var(--lp-ft-link);
+      text-decoration: none;
+    }
+
+    .lp-footer-contact a:hover {
+      color: var(--accent);
+    }
+
+    .lp-footer-contact-icon {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      color: var(--lp-ft-muted);
+    }
+
+    .lp-footer-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 22px 0 28px;
+      border-top: 1px solid var(--lp-ft-border);
+    }
+
+    .lp-footer-bar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .lp-footer-bar-left p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--lp-ft-muted);
+      line-height: 1.5;
+    }
+
+    .lp-footer-bar-left strong {
+      color: var(--lp-ft-text);
+      font-weight: 700;
+    }
+
+    .lp-footer-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .lp-footer-bar-right a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--lp-ft-link);
+      text-decoration: none;
+    }
+
+    .lp-footer-bar-right a:hover {
+      color: var(--accent);
     }
 
     /* ── Responsividade ──────────────────────────────────────── */
@@ -436,7 +571,15 @@
       .lp-nav-links { display: none; }
       .lp-hero { padding: 60px 20px 80px; }
       .lp-cta-card { padding: 40px 24px; }
-      .lp-footer { flex-direction: column; text-align: center; }
+      .lp-footer-grid {
+        grid-template-columns: 1fr;
+        text-align: left;
+      }
+      .lp-footer-tagline { max-width: none; }
+      .lp-footer-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
 
     @media (max-width: 480px) {
@@ -565,11 +708,54 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="lp-footer">
-    <a href="/" class="lp-footer-brand">
-      <div class="lp-footer-icon">📍</div>
-      <span class="lp-footer-name">LocalizaVotos</span>
-    </a>
-    <span class="lp-footer-copy">© 2026 LocalizaVotos. Todos os direitos reservados.</span>
+    <div class="lp-footer-inner">
+      <div class="lp-footer-grid">
+        <div class="lp-footer-col">
+          <a href="/" class="lp-footer-brand-row">
+            <div class="lp-footer-logo-box" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-7-11a7 7 0 1 1 14 0c0 6.65-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            </div>
+            <span class="lp-footer-title">Localiza Votos</span>
+          </a>
+          <p class="lp-footer-tagline">Plataforma de dados eleitorais georreferenciados para políticos brasileiros.</p>
+        </div>
+        <div class="lp-footer-col">
+          <h3 class="lp-footer-heading">Links rápidos</h3>
+          <ul class="lp-footer-links">
+            <li><a href="/">Início</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html">Painel Admin</a></li>
+          </ul>
+        </div>
+        <div class="lp-footer-col">
+          <h3 class="lp-footer-heading">Contato</h3>
+          <ul class="lp-footer-contact">
+            <li>
+              <svg class="lp-footer-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <a href="mailto:contato@localizavotos.com.br">contato@localizavotos.com.br</a>
+            </li>
+            <li>
+              <svg class="lp-footer-contact-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.15-3.23 1.67-4.77 4.92-4.92 1.27-.06 1.65-.07 4.85-.07zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.63-6.78-6.98-6.98C15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+              <a href="https://instagram.com/localizavotos" target="_blank" rel="noopener noreferrer">@localizavotos</a>
+            </li>
+            <li>
+              <svg class="lp-footer-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.35-7-11a7 7 0 1 1 14 0c0 6.65-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span>Ceará, Brasil</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="lp-footer-bar">
+        <div class="lp-footer-bar-left">
+          <p>© 2026 Localiza Votos. Todos os direitos reservados.</p>
+          <p>Plataforma desenvolvida por <strong>GF Informática</strong></p>
+        </div>
+        <div class="lp-footer-bar-right">
+          <a href="#">Privacidade</a>
+          <a href="#">Termos</a>
+        </div>
+      </div>
+    </div>
   </footer>
 
   <script src="/js/theme.js"></script>
